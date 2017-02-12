@@ -26,7 +26,7 @@ public static void getLang(){
             e.printStackTrace();
     }
 }
-
+```
 <h1>Type de paramètre</h1>
 <p>
     Les parametres servent à inséré des messages dans les messages de la base de donnée 
