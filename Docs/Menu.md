@@ -34,21 +34,22 @@ itemBuilder.withAdvancedEventHandlerList(new AdvancedEventHandler<InventoryClick
     }
 ) //Appel la fonction onEvent quand un joueur clique sur l'item
 itemBuild.get(); //On récupère l'itemStack crée
-```<h2>Utliser la classe Menu.java</h2>
+```
+<h2>Utliser la classe Menu.java</h2>
 ```java
-publiclass MenuExemple extends Menu {
-	plic MenuExemple(Player player){
-* @param ids byte[] ids color of glass	* @param menu Inventory menu create menu bukkit
-		* @param model int[][] mode [1][ 1 : Position of menu 2 : Position of table ids
-		super(null, Bukkit.createInvento(null, 18, "Titre", null, plugin);
-		super.menu.setItem(index, new ItBuilder(Material.SWORD).withEnchant(Enchantment.FIRE_ASPECT, 2).hideEnchant(true).get());
-		player.openInventory(super.menu)	}	/**
-	 * Event des cliques dans l'inventaire
-	 */
-	@Over //Appel la fonction onEvent quand un joueur clique sur l'itemride
-	public void interractInventory(InventoryClickEvent e) {
+publi class MenuExemple extends Menu {
+	pulic MenuExemple(Player player){
+        * @param ids byte[] ids color of glass	* @param menu Inventory menu create menu bukkit
+	    * @param model int[][] mode [1][ 1 : Position of menu 2 : Position of table ids
+	    super(null, Bukkit.createInvento(null, 18, "Titre", null, plugin);
+	    super.menu.setItem(index, new ItBuilder(Material.SWORD).withEnchant(Enchantment.FIRE_ASPECT, 2).hideEnchant(true).get());
+	    player.openInventory(super.menu)	}	/**
+	    * Event des cliques dans l'inventaire
+	    */
+	    @Override //Appel la fonction onEvent quand un joueur clique sur l'itemride
+	    public void interractInventory(InventoryClickEvent e) {
 		
-	}
+	    }
 }
 ```
 
