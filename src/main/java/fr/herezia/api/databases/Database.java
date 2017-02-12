@@ -10,7 +10,8 @@ import fr.herezia.api.Exceptions.SqlException;
 public enum Database{
     SERVER("bd_server"),
     RUSH_VOLCANO("bd_rush_volcano"),
-    FOX_HEN_VIPER("bd_fox_hen_viper");
+    FOX_HEN_VIPER("bd_fox_hen_viper"),
+    SKYWARS("bd_skywars");
 
     private DatabaseManager database;
     private String nameDataBase;
