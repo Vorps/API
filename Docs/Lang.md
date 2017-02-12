@@ -18,7 +18,7 @@ public static void getLang(){
     try {
         results = Database.SERVER.getDatabase().getDataTmp("lang_setting");
         while(results.next()) new LangSetting(results);
-        results = Database.RUSH_VOLCANO.getDatabase().getDataTmp("lang");
+        results = Database.<NAME>.getDatabase().getDataTmp("lang");
         while(results.next()) new Lang(results);
     } catch (SQLException e){
         //
