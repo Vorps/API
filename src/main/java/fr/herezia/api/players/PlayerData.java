@@ -1,7 +1,5 @@
 package fr.herezia.api.players;
 
-import lombok.Getter;
-import lombok.Setter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,37 +9,20 @@ import java.util.UUID;
 import fr.herezia.api.Exceptions.SqlException;
 import fr.herezia.api.databases.Database;
 import fr.herezia.api.databases.DatabaseManager;
+import fr.herezia.api.lang.Lang;
 import fr.herezia.api.rank.Rank;
-import fr.herezia.api.threads.ClassThread;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.bukkit.Bukkit;
 
 /**
  * Project EclipseApi Created by Vorps on 10/09/2016 at 20:44.
  */
-public class PlayerData {
+@AllArgsConstructor
+public abstract class PlayerData {
 
-    private @Setter @Getter ClassThread file;
-    private @Setter @Getter Rank rank;
-    private @Getter UUID UUID;
-
-    private static HashMap<UUID, PlayerData> playerDataHashMap;
-
-    static  {
-        PlayerData.playerDataHashMap = new HashMap<>();
-    }
-
-    public PlayerData(UUID uuid){
-        this.UUID = uuid;
-        try {
-            this.rank = Rank.getRank(PlayerData.getRank(uuid));
-        } catch (SqlException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static PlayerData getPlayerData(UUID key){
-        if(!PlayerData.playerDataHashMap.containsKey(key)) PlayerData.playerDataHashMap.put(key, new PlayerData(key));
-        return PlayerData.playerDataHashMap.get(key);
-    }
+    private @Getter String lang;
+    private @Getter UUID uuid;
 
     private static ResultSet getData(final String table, final String condition){
         ResultSet resultSet = null;
@@ -103,7 +84,6 @@ public class PlayerData {
     public static void setRank(UUID uuid, String rank){
         try {
             Database.SERVER.getDatabase().updateTable("player_setting", "ps_uuid = '"+uuid+"'", new DatabaseManager.Values("ps_rank", rank));
-            if(PlayerData.playerDataHashMap.containsKey(uuid)) PlayerData.playerDataHashMap.get(uuid).rank = Rank.getRank(rank);
         } catch (SqlException e){
             e.printStackTrace();
         }
@@ -115,6 +95,10 @@ public class PlayerData {
         } catch (SqlException e){
             e.printStackTrace();
         }
+    }
+
+    public static void broadCast(String key, PlayerData[] playerDataList, Lang.Args... args){
+        for(PlayerData playerData : playerDataList) Bukkit.getPlayer(playerData.uuid).sendMessage(Lang.getMessage(key, playerData.lang, args));
     }
 
     public static boolean lobby(UUID uuid){

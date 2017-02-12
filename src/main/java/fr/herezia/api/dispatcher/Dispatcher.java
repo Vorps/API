@@ -123,7 +123,7 @@ public class Dispatcher {
         } catch (Exception e){
             e.printStackTrace();
         }
-        file(player, state, type, nameServer, play, lang, plugin);
+       // file(player, state, type, nameServer, play, lang, plugin);
     }
 
     /**
@@ -144,7 +144,7 @@ public class Dispatcher {
         } catch (Exception e){
             e.printStackTrace();
         }
-        file(player, state, nameServer.substring(0, nameServer.length()-3).toLowerCase(), nameServer, true, lang, plugin);
+        //file(player, state, nameServer.substring(0, nameServer.length()-3).toLowerCase(), nameServer, true, lang, plugin);
     }
 
     /**
@@ -186,13 +186,14 @@ public class Dispatcher {
         } catch (Exception e){
             e.printStackTrace();
         }
-        file(player, state, type, nameServer, play, lang, plugin);
+        //file(player, state, type, nameServer, play, lang, plugin);
     }
 
     private static fr.herezia.api.type.Parameter deSerialisation(String path) throws Exception{
         return (fr.herezia.api.type.Parameter) Serialize.deSerialisation(path+"/game_parameter/parameter.ser");
     }
 
+    /*
     private static void file(Player player, int state, String type, String nameServer, boolean play, String lang, Plugin plugin){
         if(PlayerData.getPlayerData(player.getUniqueId()).getFile() == null || !PlayerData.getPlayerData(player.getUniqueId()).getFile().getNameServer().equals(nameServer)){
             player.sendMessage(Lang.getMessage("FILE.LABEL", lang)+Lang.getMessage("FILE.JOIN", lang, new Lang.Args(Lang.Parameter.SERVER, Type.getType(type).getParameter().typeLabel)));
@@ -217,4 +218,5 @@ public class Dispatcher {
             }
         }
     }
+    */
 }
