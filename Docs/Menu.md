@@ -19,25 +19,33 @@
 ```java
 ItemBuilder itemBuilder = new Item(Material.STONE); //Création de l'item STONE
 itemBuilder.withAmount(5); //On configure le nombre d'item à 5
-itemBuilder.get(); //On récupère l'itemStack crée
-```
+itemBuilder.withAdvancedEventHandlerList(new AdvancedEventHandler<InventoryClickEvent>() {
+    @Override
+    public void onEvent(InventoryClickEvent event) {
+        if(event.getWhoClicked() instanceof Player){
+            Player player = ((Player) event.getWhoClicked()).getPlayer();
+            player.sendMessage("Vous avez cliquer");
+        }
+    }
 
-<h2>Utliser la classe Menu.java</h2>
-```java
-public class MenuExemple extends Menu {
-	public MenuExemple(Player player){
-		* @param ids byte[] ids color of glass
-		* @param menu Inventory menu create menu bukkit
-		* @param model int[][] mode [1][2] 1 : Position of menu 2 : Position of table ids
-		super(null, Bukkit.createInventory(null, 18, "Titre", null, plugin);
-		super.menu.setItem(index, new ItemBuilder(Material.SWORD).withEnchant(Enchantment.FIRE_ASPECT, 2).hideEnchant(true).get());
-		player.openInventory(super.menu);
-	}
-
-	/**
+    @Override
+    public Class<InventoryClickEvent> getEventClass() {
+        return InventoryClickEvent.class;
+    }
+) //Appel la fonction onEvent quand un joueur clique sur l'item
+itemBuild.get(); //On récupère l'itemStack crée
+```<h2>Utliser la classe Menu.java</h2>
+```ja
+publiclass MenuExemple extends Menu {
+	plic MenuExemple(Player player){
+* @param ids byte[] ids color of glass	* @param menu Inventory menu create menu bukkit
+		* @param model int[][] mode [1][ 1 : Position of menu 2 : Position of table ids
+		super(null, Bukkit.createInvento(null, 18, "Titre", null, plugin);
+		super.menu.setItem(index, new ItBuilder(Material.SWORD).withEnchant(Enchantment.FIRE_ASPECT, 2).hideEnchant(true).get());
+		player.openInventory(super.menu)	}	/**
 	 * Event des cliques dans l'inventaire
 	 */
-	@Override
+	@Over //Appel la fonction onEvent quand un joueur clique sur l'itemride
 	public void interractInventory(InventoryClickEvent e) {
 		
 	}
