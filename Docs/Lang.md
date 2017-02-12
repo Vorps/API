@@ -32,7 +32,7 @@ public static void getLang(){
     Les parametres servent à inséré des messages dans les messages de la base de donnée 
 </p>
 <ul>
-	<li><strong>"<state>"</strong></li>
+	<li><strong>"\<state\>"</strong></li>
     <li><strong>"<time>"</strong></li>
     <li><strong>"<team>"</strong></li>
     <li><strong>"<point>"</strong></li>
