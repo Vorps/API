@@ -63,28 +63,28 @@ public static void getLang(){
 </ul
 <h3>Exemple d'utilisation</h3>
 ``java
-ang.getMessage(Key, langPlayer, new Lang.Args(Lang.Parameter.TYPE, value));
-``
+Lang.getMessage(Key, langPlayer, new Lang.Args(Lang.Parameter.TYPE, value));
+```
 <h1>Base de donnée</h1>
 h3>Création de la table lang_setting</h3>
 p>Cette table stoque les langues suporter</p>
-``sql
-REATE TABLE IF NOT EXISTS `lang_setting` (
+```sql
+CREATE TABLE IF NOT EXISTS `lang_setting` (
  `ls_name` varchar(20) NOT NULL,
  `ls_column_id` varchar(4) NOT NULL,
  `ls_name_display` varchar(50) NOT NULL
  ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE `lang_setting`
 ADD PRIMARY KEY (`ls_name`);
-``
+```
 h3>Ajout d'une langue</h3>
 p>Exemple d'ajout de la langue anglaise</p>
-``sql
+```sql
 NSERT INTO `NAME_DATABASE`.`lang_setting` (`ls_name`, `ls_column_id`, `ls_name_display`) VALUES ('en', 'l_en', 'english');
-``
+```
 h3>Crée la table pour les langues</h3>
 p>Cette table contient les messages du plugin en fonction des langues</p>
-``sql
+```sql
 REATE TABLE IF NOT EXISTS `lang` (
  `l_id` varchar(50) NOT NULL,
  `l_en` text NOT NULL /*correspondance avec ls_column_id de lang_setting*/
