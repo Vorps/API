@@ -32,34 +32,34 @@ public static void getLang(){
     Les parametres servent à inséré des messages dans les messages de la base de donnée 
 </p>
 <ul>
-	<li><strong><state></strong></li>
-    <li><strong><time></strong></li>
-    <li><strong><team></strong></li>
-    <li><strong><point></strong></li>
-    <li><strong><nbr_player></strong></li>
-    <li><strong><golds></strong></li>
-    <li><strong><kill></strong></li>
-    <li><strong><dead></strong></li>
-    <li><strong><wool></strong></li>
-    <li><strong><var></strong></li>
-    <li><strong><player></strong></li>
-    <li><strong><mode></strong></li>
-    <li><strong><server></strong></li>
-    <li><strong><message></strong></li>
-    <li><strong><killer></strong></li>
-    <li><strong><nbr_max_player></strong></li>
-    <li><strong><color></strong></li>
-    <li><strong><winner></strong></li>
-    <li><strong><price></strong></li>
-    <li><strong><device></strong></li>
-    <li><strong><looser></strong></li>
-    <li><strong><kit></strong></li>
-    <li><strong><page></strong></li>
-    <li><strong><life></strong></li>
-    <li><strong><bonus></strong></li>
-    <li><strong><killed></strong></li>
-    <li><strong><spectator></strong></li>
-    <li><strong><speed></strong></li>
+	<li><strong>"<state>"</strong></li>
+    <li><strong>"<time>"</strong></li>
+    <li><strong>"<team>"</strong></li>
+    <li><strong>"<point>"</strong></li>
+    <li><strong>"<nbr_player>"</strong></li>
+    <li><strong>"<golds>"</strong></li>
+    <li><strong>"<kill>"</strong></li>
+    <li><strong>"<dead>"</strong></li>
+    <li><strong>"<wool>"</strong></li>
+    <li><strong>"<var>"</strong></li>
+    <li><strong>"<player>"</strong></li>
+    <li><strong>"<mode>"</strong></li>
+    <li><strong>"<server>"</strong></li>
+    <li><strong>"<message>"</strong></li>
+    <li><strong>"<killer>"</strong></li>
+    <li><strong>"<nbr_max_player>"</strong></li>
+    <li><strong>"<color>"</strong></li>
+    <li><strong>"<winner>"</strong></li>
+    <li><strong>"<price>"</strong></li>
+    <li><strong>"<device>"</strong></li>
+    <li><strong>"<looser>"</strong></li>
+    <li><strong>"<kit>"</strong></li>
+    <li><strong>"<page>"</strong></li>
+    <li><strong>"<life>"</strong></li>
+    <li><strong>"<bonus>"</strong></li>
+    <li><strong>"<killed>"</strong></li>
+    <li><strong>"<spectator>"</strong></li>
+    <li><strong>"<speed>"</strong></li>
 </ul>
 <h3>Exemple d'utilisation</h3>
 ```java
@@ -78,7 +78,7 @@ ALTER TABLE `lang_setting`
 ADD PRIMARY KEY (`ls_name`);
 ```
 <h3>Ajout d'une langue</h3>
-p>Exemple d'ajout de la langue anglaise</p>
+<p>Exemple d'ajout de la langue anglaise</p>
 ```sql
 INSERT INTO `NAME_DATABASE`.`lang_setting` (`ls_name`, `ls_column_id`, `ls_name_display`) VALUES ('en', 'l_en', 'english');
 ```
