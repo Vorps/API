@@ -35,7 +35,7 @@ itemBuilder.withAdvancedEventHandlerList(new AdvancedEventHandler<InventoryClick
 ) //Appel la fonction onEvent quand un joueur clique sur l'item
 itemBuild.get(); //On récupère l'itemStack crée
 ```<h2>Utliser la classe Menu.java</h2>
-```ja
+```java
 publiclass MenuExemple extends Menu {
 	plic MenuExemple(Player player){
 * @param ids byte[] ids color of glass	* @param menu Inventory menu create menu bukkit
