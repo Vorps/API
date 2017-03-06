@@ -1,5 +1,6 @@
 package fr.herezia.api.objects;
 
+import fr.herezia.api.data.Data;
 import org.bukkit.Bukkit;
 
 import fr.herezia.api.Exceptions.SqlException;
@@ -20,6 +21,7 @@ public class Location {
 
     static {
         Location.listLocation = new HashMap<>();
+        Data.getInstance().loadLocation();
     }
 
     public static void clear(){

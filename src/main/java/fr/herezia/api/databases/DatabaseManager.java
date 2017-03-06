@@ -553,6 +553,44 @@ public class DatabaseManager {
     }
 
     /**
+     * Return data column Type dateTime
+     * @param result ResultSet
+     * @param index int
+     * @return Timestamp
+     * @throws SqlException
+     */
+    public Date getDateTime(ResultSet result, int index) throws SqlException {
+        Date value = null;
+        try {
+            value = result.getDate(index);
+        } catch (SQLException e){
+            //
+        } catch (NullPointerException e){
+            throw new SqlException("Error, Column", new Throwable("Column does not exist"));
+        }
+        return value;
+    }
+
+    /**
+     * Return data column Type dateTime
+     * @param result ResultSet
+     * @param nameColumn String
+     * @return Timestamp
+     * @throws SqlException
+     */
+    public Date getDateTime(ResultSet result, String nameColumn) throws SqlException {
+        Date value = null;
+        try {
+            value = result.getDate(nameColumn);
+        } catch (SQLException e){
+            //
+        } catch (NullPointerException e){
+            throw new SqlException("Error, Column", new Throwable("Column does not exist"));
+        }
+        return value;
+    }
+
+    /**
      * Return data column Type Timestamp
      * @param result ResultSet
      * @param nameColumn String

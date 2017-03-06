@@ -1,5 +1,6 @@
 package fr.herezia.api.objects;
 
+import fr.herezia.api.data.Data;
 import lombok.Getter;
 
 import org.bukkit.Material;
@@ -68,6 +69,7 @@ public class BookHelp {
     static {
         BookHelp.bookHelpList = new HashMap<>();
         BookHelp.trieBookHelp = new TreeMap<>(new ComparatorBookHelp(BookHelp.bookHelpList));
+        Data.getInstance().loadBookHelp();
     }
 
     public static HashMap<String, BookHelp> getBookList(){

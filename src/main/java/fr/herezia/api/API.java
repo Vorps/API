@@ -1,5 +1,6 @@
 package fr.herezia.api;
 
+import fr.herezia.api.bungee.Bungee;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import fr.herezia.api.databases.Database;
@@ -15,6 +16,7 @@ public class API extends JavaPlugin {
     @Override
     public void onEnable(){
         API.instance = this;
+        Bungee.command();
     }
 
     @Override

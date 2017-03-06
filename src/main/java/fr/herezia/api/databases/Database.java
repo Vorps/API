@@ -11,6 +11,7 @@ public enum Database{
     SERVER("bd_server"),
     RUSH_VOLCANO("bd_rush_volcano"),
     FOX_HEN_VIPER("bd_fox_hen_viper"),
+    BUNGEE("bd_bungee"),
     SKYWARS("bd_skywars");
 
     private DatabaseManager database;

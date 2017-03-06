@@ -1,5 +1,6 @@
 package fr.herezia.api.objects;
 
+import fr.herezia.api.data.Data;
 import org.bukkit.Location;
 
 import fr.herezia.api.Exceptions.SqlException;
@@ -20,6 +21,7 @@ public class Limite {
 
     static {
         Limite.listLimite = new HashMap<>();
+        Data.getInstance().loadLimite();
     }
 
     public static double[] getLimite(String nameLimite){

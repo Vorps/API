@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 
 import fr.herezia.api.Exceptions.SqlException;
+import fr.herezia.api.data.Data;
 import fr.herezia.api.databases.Database;
 import fr.herezia.api.lang.Lang;
 
@@ -33,6 +34,7 @@ public class MessageTitle {
 
     static  {
         MessageTitle.messageTitleList = new HashMap<>();
+        Data.getInstance().loadMessageTitle();
     }
 
     public static void clear(){

@@ -1,17 +1,18 @@
-package fr.herezia.api.rank;
+package fr.herezia.api.players;
 
+import fr.herezia.api.Exceptions.SqlException;
+import fr.herezia.api.data.Data;
+import fr.herezia.api.databases.Database;
 import lombok.Getter;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
 
-import fr.herezia.api.Exceptions.SqlException;
-import fr.herezia.api.databases.Database;
-
 /**
- * Project Hub Created by Vorps on 01/02/2016 at 01:44.
+ * Project Bungee Created by Vorps on 01/02/2016 at 01:44.
  */
-public class Rank {
+public class Rank extends Object{
+
 	private @Getter String rank;
 	private @Getter String rankDisplay;
 	private @Getter String rankAlias;
@@ -39,19 +40,23 @@ public class Rank {
 
     @Override
 	public String toString() {
-        return this.rankDisplay.isEmpty() ? this.colorRank+"["+this.rank+"]" : this.colorRank+this.rankDisplay;
+        return this.rankDisplay.isEmpty() ? this.colorRank+"["+this.rank+"]" : this.colorRank+this.rankDisplay+colorChat;
 	}
 
     private static @Getter HashMap<String, Rank> rankList;
 
     static {
         Rank.rankList = new HashMap<>();
+        Data.getInstance().loadRank();
     }
 
     public static Rank getRank(String nameRank){
         return Rank.rankList.get(nameRank);
     }
 
+    public static boolean isRank(String rank){
+        return Rank.getRankList().containsKey(rank);
+    }
     public static void clear(){
         Rank.rankList.clear();
     }

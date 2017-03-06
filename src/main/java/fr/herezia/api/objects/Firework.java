@@ -1,5 +1,6 @@
 package fr.herezia.api.objects;
 
+import fr.herezia.api.data.Data;
 import org.bukkit.*;
 import org.bukkit.Location;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -88,6 +89,7 @@ public class Firework {
 
     static {
         Firework.listFirework = new HashMap<>();
+        Data.getInstance().loadFireWork();
     }
 
     public static void clear(){

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.bukkit.entity.Player;
 
-import fr.herezia.api.chanel.ChanelManagers;
 import lombok.Getter;
 
 /**
@@ -30,7 +29,6 @@ public class ThreadServer extends ClassThread {
         } catch (InterruptedException e){
             e.printStackTrace();
         }
-        ChanelManagers.connectPlayer(this.player, super.nameServer);
         ThreadServer.serverStart.remove(getNameServer());
         interrupt();
     }

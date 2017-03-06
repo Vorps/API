@@ -1,5 +1,6 @@
 package fr.herezia.api.objects;
 
+import fr.herezia.api.data.Data;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.potion.PotionType;
 
@@ -70,6 +71,7 @@ public class Item {
 
     static {
         Item.listItem = new HashMap<>();
+        Data.getInstance().loadItem();
     }
 
     /**

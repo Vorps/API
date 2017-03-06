@@ -46,7 +46,8 @@ public class Particle {
     private static @Getter HashMap<String, Particle> listParticle;
 
     static {
-        listParticle = new HashMap<>();
+        Particle.listParticle = new HashMap<>();
+
     }
 
     public static Particle getParticle(String name){

@@ -5,7 +5,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 import fr.herezia.api.Exceptions.SqlException;
+import fr.herezia.api.data.Data;
 import fr.herezia.api.databases.Database;
+import org.junit.runners.JUnit4;
 
 /**
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
@@ -26,6 +28,8 @@ public class Lang {
         }
         Lang.lang.put(key, langMessage);
     }
+
+
 
     public static class Args{
         private Parameter parameter;
@@ -74,7 +78,12 @@ public class Lang {
         }
     }
 
-    private static HashMap<String, HashMap<String, String>> lang = new HashMap<>();
+    private static HashMap<String, HashMap<String, String>> lang;
+
+    static {
+        Lang.lang = new HashMap<>();
+        Data.getInstance().loadLang();
+    }
 
     public static String getMessage(String key, String langPlayer, Args... args){
         String message;

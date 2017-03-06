@@ -26,9 +26,7 @@ public abstract class Commands {
      * Function end commande
      */
     public void onDisable(){
-        if(!isStateExec() && this.sender.hasPermission(this.permission)){
-            this.help();
-        }
+        if(!isStateExec() && this.sender.hasPermission(this.permission)) this.help();
     }
 
     protected abstract void help();
