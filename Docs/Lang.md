@@ -9,24 +9,6 @@
 	Ces classes permetent de charger et d'afficher les bon messages en fonction de la langue du joueur
 </p>
 <h1>Comment les utiliser</h1>
-<h3>Charger les messages du plugin</h3>
-```java
-public static void getLang(){ 
-    Lang.clearLang();
-    LangSetting.clearLangSetting();
-    ResultSet results;
-    try {
-        results = Database.SERVER.getDatabase().getDataTmp("lang_setting");
-        while(results.next()) new LangSetting(results);
-        results = Database.<NAME>.getDatabase().getData("lang");
-        while(results.next()) new Lang(results);
-    } catch (SQLException e){
-        //
-    } catch (SqlException e) {
-            e.printStackTrace();
-    }
-}
-```
 <h1>Type de paramètre</h1>
 <p>
     Les parametres servent à inséré des messages dans les messages de la base de donnée 
