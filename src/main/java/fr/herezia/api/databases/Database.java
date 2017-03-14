@@ -1,7 +1,9 @@
 package fr.herezia.api.databases;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
+import fr.herezia.api.API;
 import fr.herezia.api.Exceptions.SqlException;
 
 /**
@@ -10,7 +12,6 @@ import fr.herezia.api.Exceptions.SqlException;
 public enum Database{
     SERVER("bd_server"),
     RUSH_VOLCANO("bd_rush_volcano"),
-    FOX_HEN_VIPER("bd_fox_hen_viper"),
     BUNGEE("bd_bungee"),
     SKYWARS("bd_skywars");
 
@@ -22,11 +23,13 @@ public enum Database{
     }
 
     Database(String nameDataBase){
-        this.nameDataBase = nameDataBase;
-        try {
-            this.database = new DatabaseManager(nameDataBase);
-        } catch (SqlException e){
-            e.printStackTrace();
+        if(API.getInstance() != null){
+            this.nameDataBase = nameDataBase;
+            try {
+                this.database = new DatabaseManager(nameDataBase);
+            } catch (SqlException e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -50,10 +53,6 @@ public enum Database{
      * Close all current session
      */
     public static void closeAllDataBases(){
-        for(Database database : Database.values()){
-            database.getDatabase().closeDataBase();
-        }
+        for(Database database :  Database.values()) if(database.getDatabase() != null) database.getDatabase().closeDataBase();
     }
-
-
 }

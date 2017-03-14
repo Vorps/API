@@ -21,6 +21,7 @@ public class API extends JavaPlugin {
 
     @Override
     public void onDisable(){
+        API.instance = null;
         Database.closeAllDataBases();
     }
 
