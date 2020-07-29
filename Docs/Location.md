@@ -24,7 +24,7 @@ private static void getLocation(){
 <h3>Utiliser la location</h3>
 ```java
 Location Location = Location.getLocation("name_location"); //Retourne une location bukkit
-player.teleport(location); //Téléporte le joueur à la position
+playerInterract.teleport(location); //Téléporte le joueur à la position
 ```
 
 <h1>Base de donnée</h1>

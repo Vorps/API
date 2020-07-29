@@ -10,5 +10,5 @@
 ActionBarBuilder actionBarBuilder = new ActionBarBuilder("exemple1"); //Création du message
 actionBarBuilder.withMessage("exemple2"); //Redéfinition du message
 actionBarBuilder.withStay(10); //Temps d'affichage du message
-actionBarBuilder.sendTo(player); //Affichage du message dans la barre d'action du joueur
+actionBarBuilder.sendTo(playerInterract); //Affichage du message dans la barre d'action du joueur
 ```

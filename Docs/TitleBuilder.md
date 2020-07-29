@@ -15,5 +15,5 @@ titleBuilder.withSubTitle("subTitle2"); //Redéfinition du subTitle
 titleBuilder.withFadeIn(1); //Temps de transition au début (fondu)
 titleBuilder.withFadeOut(1); //Temps de transition a la fin (fondu)
 titleBuilder.withStay(1); //temps d'affichage du message
-titleBuilder.sendTo(player); //Affichage du title au player
+titleBuilder.sendTo(playerInterract); //Affichage du title au playerInterract
 ```

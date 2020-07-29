@@ -26,7 +26,7 @@ private static void getLimite(){
 @EventHandler
 public void onPlayerMove(PlayerMoveEvent e){
 	Double limite[] = Limite.getLimite("name_limite"); retroune un tableau de double
-	Limite.limite(player.getLocation(), limite); //Est vrai quand le joueur est en dehort des limites
+	Limite.limite(playerInterract.getLocation(), limite); //Est vrai quand le joueur est en dehort des limites
 }
 ```
 

@@ -12,10 +12,10 @@
 <h3>Exemple d'utilisation</h3>
 
 ```java
-Dispatcher.connectServer(Type.TYPE, player, play, lang, plugin); 
+Dispatcher.connectServer(Type.TYPE, playerInterract, play, lang, plugin); 
 //Permet d'envoyer le joueur sur le server du type indiquer
-Dispatcher.connectServer(nameServer, player, lang, plugin);
+Dispatcher.connectServer(nameServer, playerInterract, lang, plugin);
 //Permet d'envoyer le joueur sur le server avec le nom indiquer
-Dispatcher.connectServer(Type.TYPE, map, player, play, lang, plugin);
+Dispatcher.connectServer(Type.TYPE, map, playerInterract, play, lang, plugin);
 //Permet d'envoyer le joueur sur le server du type indiquer avec la map indiquer
 ```

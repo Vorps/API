@@ -24,7 +24,7 @@
     <li><strong>"dead"</strong></li>
     <li><strong>"wool"</strong></li>
     <li><strong>"var"</strong></li>
-    <li><strong>"player"</strong></li>
+    <li><strong>"playerInterract"</strong></li>
     <li><strong>"mode"</strong></li>
     <li><strong>"server"</strong></li>
     <li><strong>"message"</strong></li>

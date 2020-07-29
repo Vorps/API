@@ -1,4 +1,4 @@
 name: API
-main: fr.herezia.api.API
+main: net.vorps.api.API
 author: Vorps
 version: 1.0

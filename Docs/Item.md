@@ -26,7 +26,7 @@ private static void getItem(){
 ```java
 ItemBuilder itemBuilder = Item.getItem("namme_item", lang); //Retourne un itemBuilder
 ItemStack itemStack = itemBuilder.get();
-player.getInventory().setItem(index, itemStack);
+playerInterract.getInventory().setItem(index, itemStack);
 ```
 
 <h1>Base de donnée</h1>

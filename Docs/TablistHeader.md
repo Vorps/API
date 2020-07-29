@@ -12,5 +12,5 @@
 TablistBuilder tablistBuilder = new TablistBuilder("header1", "footer1");
 tablistBuilder.withHeader("header2"); //Redéfinition du header
 tablistBuilder.withFooter("footer2"); //Redéfinition du footer
-tablistBuilder.sendTo(player) //Ajoute un header et un footer à la tablist du joueur
+tablistBuilder.sendTo(playerInterract) //Ajoute un header et un footer à la tablist du joueur
 ```

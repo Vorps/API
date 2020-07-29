@@ -24,7 +24,7 @@ private static void getMessageTitle(){
 ```java
 MessageTitle messageTitle = MessageTitle.getMessageTitle("name_message_title")
 TitleBuilder titleBuilder = new TitleBuilder(messageTitle.getTitle(lang), messageTitle.getSubTitle(lang));
-titleBuilder.senTo(player);
+titleBuilder.senTo(playerInterract);
 ```
 
 <h1>Base de donnée</h1>

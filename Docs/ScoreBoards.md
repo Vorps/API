@@ -18,8 +18,8 @@ public class ScoreBoardExemple extends ScoreBoard {
 		super.add("id", "text", 1); //Ajout d'une ligne text avec 1 point
 		super.updateValue("id", "test2"); //Update ligne text
 		super.createTeam("red", "rouge"); //Crée nouvelle team
-		super.addPlayerTeam("red", player); //Ajoute à la team red le joueur
-		super.removePlayerTeam("red", player); //Retire à la team red le joueur
+		super.addPlayerTeam("red", playerInterract); //Ajoute à la team red le joueur
+		super.removePlayerTeam("red", playerInterract); //Retire à la team red le joueur
 		super.removeTeam("red"); //Suprime la team red
 		super.remove("id") //Suprime la ligne "text2"
 	}

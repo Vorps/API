@@ -26,7 +26,7 @@ private static void getBookHelp(){
 ```java
 BookHelp bookHelp = BookHelp.getBookList().get(nameBook); //Récupération du livre d'aide avec le titre du livre
 ItemStack book = bookHelp.getBook(lang);
-player.getInventory().setItem(index, book);
+playerInterract.getInventory().setItem(index, book);
 ```
 
 <h1>Base de donnée</h1>
