@@ -7,6 +7,7 @@ import net.vorps.api.databases.DatabaseManager;
 import lombok.Getter;
 import lombok.Setter;
 import net.vorps.api.lang.Lang;
+import net.vorps.api.objects.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -46,14 +47,19 @@ public abstract class PlayerData {
         PlayerData.playerDataList.remove(this.name);
     }
 
-    private static HashMap<String, PlayerData> playerDataList;
+    private static HashMap<String, PlayerData> playerDataList = new HashMap<>();
 
-    {
+
+    static {
         PlayerData.playerDataList = new HashMap<>();
     }
 
     public static PlayerData getPlayerDataCore(String name) {
         return PlayerData.playerDataList.get(name);
+    }
+
+    public static boolean isPlayerDataCore(String name) {
+        return PlayerData.playerDataList.keySet().contains(name);
     }
 
     public Player getPlayer(){
@@ -255,10 +261,10 @@ public abstract class PlayerData {
         }
     }
 
-    public static String getRank(UUID uuid) {
-        String rank = null;
+    public static Rank getRank(UUID uuid) {
+        Rank rank = null;
         try {
-            rank = PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getString("ps_rank");
+            rank = Rank.getRank(PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getString("ps_rank"));
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,9 +1,6 @@
 package net.vorps.api.commands;
 
-import net.vorps.api.API;
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.cooldowns.CoolDowns;
-import net.vorps.api.databases.Database;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.players.PlayerData;
 import net.vorps.api.utils.Settings;
@@ -11,24 +8,20 @@ import net.vorps.api.utils.StringBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Project Bungee Created by Vorps on 02/04/2017 at 22:12.
  */
-public class Command extends org.bukkit.command.Command implements TabExecutor {
+public class Command {
 
-    private String name;
+    private @Getter String name;
     private int time;
-    private @Getter CommandSender sender;
     private @Getter @Setter String lang;
     private @Getter @Setter boolean stateExec;
-    private String permission;
     private @Getter String[] permissions;
     private String color;
     private CommandSystem[] commandSystems;
@@ -38,115 +31,59 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
     /**
      * Construire une commande
      * @param nameCommand String - Name
-     * @param permission String - Permission global
      * @param permissions String[] - Liste des permission par argument
      * @param color String - Couleur de l'aide
      * @param nHelp int - Nombre de d'aide par page
      * @param time int - Temps de cooldown de la commande
      * @param commandSystems CommandSystem - Action de la commande
      */
-    public Command(String nameCommand, String permission, String[] permissions, String color, int nHelp, int time, CommandSystem... commandSystems) {
-        super(nameCommand);
+    public Command(String nameCommand, String[] permissions, String color, int nHelp, int time, CommandSystem... commandSystems) {
         this.name = nameCommand;
         this.time = time;
         this.stateExec = false;
-        this.permission = permission;
         this.permissions = permissions;
         this.color = color;
         this.nHelp = nHelp;
         this.setCommandSystems(commandSystems);
-        API.getPlugin().getCommand(nameCommand).setExecutor(this);
-        try {
-            this.database();
-        } catch (SqlException e){
-            e.printStackTrace();
-        }
     }
 
-    private void database() throws SqlException{
-        Database.CORE.getDatabase().insertTable("command", this.name);
-        for(String perm : this.permissions) Database.CORE.getDatabase().insertTable("permission", this.name, perm);
-        for(String perm : this.permissions) Database.CORE.getDatabase().insertTable("permission", this.name, perm);
-    }
-
-    static {
-        try {
-            if(!Database.CORE.getDatabase().isTable("command")) Database.CORE.getDatabase().sendRequest("CREATE TABLE `command`(`c_name` varchar(10) NOT NULL, PRIMARY KEY (`c_name`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Liste des commandes du serveur';");
-            if(!Database.CORE.getDatabase().isTable("permission")) Database.CORE.getDatabase().sendRequest("CREATE TABLE `permission` (`c_command` varchar(10) NOT NULL, `c_permission` varchar(100) NOT NULL, PRIMARY KEY (`c_command`,`c_permission`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Permissions des commandes';ALTER TABLE `permission` ADD CONSTRAINT `permission_ibfk_1` FOREIGN KEY (`c_command`) REFERENCES `command` (`c_name`);");
-        } catch (SqlException e){
-            e.printStackTrace();
-        }
-    }
-    private boolean isEnable() {
-        boolean state = false;
-        if (!CoolDowns.hasCoolDown(sender.getName(), this.name)) {
-            new CoolDowns(sender.getName(), this.time, this.name);
-            state = true;
-        } else {
-            CoolDowns coolDowns = CoolDowns.getCoolDown(sender.getName(), this.name);
-            if (coolDowns.getSecondsLeft() <= 0) {
-                coolDowns.removeCoolDown();
-                state = true;
-            }
-        }
-        return state;
-    }
-
-    public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args){
-        return this.execute(sender, label, args);
-    }
-
-    private void setCommandSystems(CommandSystem[] commandSystems) {
-        int i = 0;
-        int y = 0;
-        for (CommandSystem commandSystem : commandSystems) {
-            commandSystem.setIndexHelp(y++);
-            if (commandSystem.getCondition().getIndexPerm() != -1)
-                commandSystem.getCondition().setIndexPerm(i++);
-        }
-        this.commandSystems = commandSystems;
-    }
-
-    @Override
-    public boolean execute(CommandSender sender, String command ,String[] args) {
-        this.sender = sender;
-        if (this.hasPermission()){
+    public boolean execute(CommandSender sender, String[] args) {
+        if (this.hasPermission(sender)){
             this.stateExec = false;
-            this.lang = this.sender instanceof Player ? PlayerData.getPlayerDataCore(this.sender.getName()).getLang() : Settings.getConsoleLang();
+            this.lang = PlayerData.isPlayerDataCore(sender.getName()) ? PlayerData.getPlayerDataCore(sender.getName()).getLang() : Settings.getConsoleLang();
             if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("help")) {
-                this.helpFunction(new String[0], args.length == 2 ? args[1] : null);
+                this.helpFunction(sender, new String[0], args.length == 2 ? args[1] : null);
                 this.stateExec = true;
             } else {
-                if(this.isEnable()){
-                    CoupleCommandSystem[] coupleCommandSystems = this.getCoupleCommand(args, true);
-                    for (CoupleCommandSystem coupleCommandSystem : coupleCommandSystems) {
-                        if (coupleCommandSystem.commandArg.length <= args.length && isValid(coupleCommandSystem, args)) {
+                if(isEnable(sender.getName())){
+                    net.vorps.api.commands.Command.CoupleCommandSystem[] coupleCommandSystems = this.getCoupleCommand(sender, args, true);
+                    for (net.vorps.api.commands.Command.CoupleCommandSystem coupleCommandSystem : coupleCommandSystems) {
+                        if (coupleCommandSystem.commandArg.length <= args.length && isValid(sender, coupleCommandSystem, args)) {
                             this.stateExec = true;
                             coupleCommandSystem.commandSystem.getCommandExecute().execute(args);
                         }
                     }
-                    this.helpFunction(args);
+                    this.helpFunction(sender, args);
                 }
             }
         }
         return true;
     }
 
-    public List<String> onTabComplete(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args){
+    public List<String> onTabComplete(CommandSender sender, String[] args){
         List<String> matches = new ArrayList<>();
-        this.sender = sender;
         switch (args.length) {
             case 1:
-                if (this.hasPermission()) if (args[0].toLowerCase().startsWith("help")) matches.add("help");
+                if (this.hasPermission(sender)) if (args[0].toLowerCase().startsWith("help")) matches.add("help");
                 break;
             case 2:
-                if (this.hasPermission() && args[0].equalsIgnoreCase("help"))
+                if (this.hasPermission(sender) && args[0].equalsIgnoreCase("help"))
                     for (int i = 1; i <= this.nPage; i++) matches.add("" + i);
                 break;
             default:
                 break;
         }
-        for (CoupleCommandSystem coupleCommandSystem : this.getCoupleCommand(args, false)) { //Donne tout les arguments possible
+        for (net.vorps.api.commands.Command.CoupleCommandSystem coupleCommandSystem : this.getCoupleCommand(sender, args, false)) { //Donne tout les arguments possible
             if (coupleCommandSystem.commandArg.length >= args.length) {
                 if (!coupleCommandSystem.commandArg[args.length - 1].isState())
                     matches.add(coupleCommandSystem.commandArg[args.length - 1].getArg());
@@ -158,7 +95,34 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
         return matches;
     }
 
-    private boolean isValid(CoupleCommandSystem coupleCommandSystem, String[] args) {
+    private boolean isEnable(String name) {
+        boolean state = false;
+        if (!CoolDowns.hasCoolDown(name, this.name)) {
+            new CoolDowns(name, this.time, this.name);
+            state = true;
+        } else {
+            CoolDowns coolDowns = CoolDowns.getCoolDown(name, this.name);
+            if (coolDowns.getSecondsLeft() <= 0) {
+                coolDowns.removeCoolDown();
+                state = true;
+            }
+        }
+        return state;
+    }
+
+
+    public void setCommandSystems(CommandSystem... commandSystems) {
+        int i = 0;
+        int y = 0;
+        for (CommandSystem commandSystem : commandSystems) {
+            commandSystem.setIndexHelp(y++);
+            if (commandSystem.getCondition().getIndexPerm() != -1)
+                commandSystem.getCondition().setIndexPerm(i++);
+        }
+        this.commandSystems = commandSystems;
+    }
+
+    private boolean isValid(CommandSender sender, CoupleCommandSystem coupleCommandSystem, String[] args) {
         boolean state = true;
         int i = 0;
         for (CommandArg commandArg : coupleCommandSystem.commandArg) {
@@ -191,15 +155,15 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
         private CommandArg[] commandArg;
     }
 
-    private CoupleCommandSystem[] getCoupleCommand(String[] args, boolean state) {
+    private CoupleCommandSystem[] getCoupleCommand(CommandSender sender, String[] args, boolean state) {
         ArrayList<CoupleCommandSystem> coupleCommandSystems = new ArrayList<>();
         ArrayList<ArrayList<CommandArg>> commandArgsTmp = new ArrayList<>();
         ArrayList<CommandSystem> commandSystems = new ArrayList<>();
         for (CommandSystem commandSystem : this.commandSystems) {
-            if (this.isStatePerm(commandSystem.getCondition())) {
+            if (this.isStatePerm(sender, commandSystem.getCondition())) {
                 ArrayList<CommandArg> commandArgsTmp1 = new ArrayList<>();
                 for (CommandArg commandArg : commandSystem.getArgs()) {
-                    if (this.isStatePerm(commandArg.getCondition())) commandArgsTmp1.add(commandArg);
+                    if (this.isStatePerm(sender, commandArg.getCondition())) commandArgsTmp1.add(commandArg);
                 }
                 commandArgsTmp.add(commandArgsTmp1);
                 commandSystems.add(commandSystem);
@@ -246,18 +210,18 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
         return StringBuilder.convert(coupleCommandSystems, new CoupleCommandSystem[coupleCommandSystems.size()]);
     }
 
-    private void helpFunction(String[] args, String... pageArg) {
+    private void helpFunction(CommandSender sender, String[] args, String... pageArg) {
         if (!this.stateExec && this.commandSystems != null) {
-            this.nPage = getNbPage();
+            this.nPage = getNbPage(sender);
             int page = pageArg.length != 0 && pageArg[0] != null ? this.getPage(pageArg[0]) : 1;
-            CoupleCommandSystem[] coupleCommandSystems = this.getCoupleCommand(args, true);
-            this.sender.sendMessage(this.color + "┌─────────────────────────────────┐");
-            this.sender.sendMessage(this.color + "│");
-            this.sender.sendMessage(this.color + "├ §e► §9§lHelp " + super.getName().toUpperCase() + " " + (coupleCommandSystems.length == 1 ? "§a(§6" + new StringBuilder(coupleCommandSystems[0].commandArg[0].getArg()).toUpperFirstLetter().getString() + "§a)" : "§a(§6" + page + "§a/§6" + this.nPage + "§a)   " + Lang.getMessage("BUNGEE.CMD." + super.getName().toUpperCase() + ".HELP", this.lang)) + " §e◄");
-            this.sender.sendMessage(this.color + "│");
-            this.getHelp(page, coupleCommandSystems.length > 0 ? coupleCommandSystems : this.getCoupleCommand(new String[0], true));
-            this.sender.sendMessage(this.color + "│");
-            this.sender.sendMessage(this.color + "└─────────────────────────────────┘");
+            CoupleCommandSystem[] coupleCommandSystems = this.getCoupleCommand(sender, args, true);
+            sender.sendMessage(this.color + "┌─────────────────────────────────┐");
+            sender.sendMessage(this.color + "│");
+            sender.sendMessage(this.color + "├ §e► §9§lHelp " + name.toUpperCase() + " " + (coupleCommandSystems.length == 1 ? "§a(§6" + new StringBuilder(coupleCommandSystems[0].commandArg[0].getArg()).toUpperFirstLetter().getString() + "§a)" : "§a(§6" + page + "§a/§6" + this.nPage + "§a)   " + Lang.getMessage("BUNGEE.CMD." + name.toUpperCase() + ".HELP", this.lang)) + " §e◄");
+            sender.sendMessage(this.color + "│");
+            getHelp(sender, page, coupleCommandSystems.length > 0 ? coupleCommandSystems : this.getCoupleCommand(sender, new String[0], true));
+            sender.sendMessage(this.color + "│");
+            sender.sendMessage(this.color + "└─────────────────────────────────┘");
         }
     }
 
@@ -266,10 +230,10 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
      * Indique si le sender a une permission
      * @return boolean
      */
-    public boolean hasPermission() {
+    public boolean hasPermission(CommandSender sender) {
         boolean state = false;
         for (String perm : this.permissions) {
-            if (this.sender.hasPermission(this.permission + "." + perm)) {
+            if (sender.hasPermission(perm)) {
                 state = true;
                 break;
             }
@@ -282,8 +246,8 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
      * @param index int
      * @return boolean
      */
-    public boolean hasPermission(int index) {
-        return this.sender.hasPermission(this.permission + "." + this.permissions[index]);
+    public boolean hasPermission(CommandSender sender, int index) {
+        return sender.hasPermission(this.permissions[index]);
     }
 
     private int getPage(String page) {
@@ -296,21 +260,21 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
         return pageResult > this.nPage ? this.nPage : pageResult <= 0 ? 1 : pageResult;
     }
 
-    private int getNbPage() {
+    private int getNbPage(CommandSender sender) {
         int i = 0;
-        for (CommandSystem help : this.commandSystems) if (this.isStatePerm(help.getCondition())) i++;
+        for (CommandSystem help : this.commandSystems) if (this.isStatePerm(sender, help.getCondition())) i++;
         return i / this.nHelp + (i % this.nHelp == 0 ? 0 : 1);
     }
 
-    private void getHelp(int page, CoupleCommandSystem[] coupleCommandSystems) {
-        if (coupleCommandSystems.length == 1) this.getHelpPlayer(coupleCommandSystems[0]);
+    private void getHelp(CommandSender sender, int page, CoupleCommandSystem[] coupleCommandSystems) {
+        if (coupleCommandSystems.length == 1) this.getHelpPlayer(sender, coupleCommandSystems[0]);
         else for (int i = (page - 1) * this.nHelp; i < page * this.nHelp && i < coupleCommandSystems.length; i++)
-            this.getHelpPlayer(coupleCommandSystems[i]);
+            this.getHelpPlayer(sender, coupleCommandSystems[i]);
     }
 
-    private void getHelpPlayer(CoupleCommandSystem coupleCommandSystem) {
-        for (String messageTmp : this.getMessage(this.color + "├ §7■§e §b/§9" + super.getName() + this.getHelp(coupleCommandSystem.commandArg)[1] + " §b◊ " + this.getHelp(coupleCommandSystem.commandArg)[0] + " §b► §7" + Lang.getMessage("BUNGEE.CMD." + super.getName().toUpperCase() + ".HELP_" + coupleCommandSystem.commandSystem.getIndexHelp(), this.lang)))
-            this.sender.sendMessage(messageTmp);
+    private void getHelpPlayer(CommandSender sender, CoupleCommandSystem coupleCommandSystem) {
+        for (String messageTmp : this.getMessage(this.color + "├ §7■§e §b/§9" + name + this.getHelp(coupleCommandSystem.commandArg)[1] + " §b◊ " + this.getHelp(coupleCommandSystem.commandArg)[0] + " §b► §7" + Lang.getMessage("BUNGEE.CMD." + name.toUpperCase() + ".HELP_" + coupleCommandSystem.commandSystem.getIndexHelp(), this.lang)))
+            sender.sendMessage(messageTmp);
     }
 
     private String[] getMessage(String message) {
@@ -351,8 +315,8 @@ public class Command extends org.bukkit.command.Command implements TabExecutor {
         return new String[]{helpCurrent.getString(), helpMessage.getString()};
     }
 
-    private boolean isStatePerm(Condition var) {
-        return var.isStatePerm() == (var.getIndexPerm() < 0 || var.getIndexPerm() > permissions.length || hasPermission(var.getIndexPerm())) && (var.getCondition() == null || var.getCondition().condition()) && (!var.isPlayer() || this.sender instanceof Player);
+    private boolean isStatePerm(CommandSender sender, Condition var) {
+        return var.isStatePerm() == (var.getIndexPerm() < 0 || var.getIndexPerm() > permissions.length || hasPermission(sender, var.getIndexPerm())) && (var.getCondition() == null || var.getCondition().condition()) && (!var.isPlayer() || sender.isPlayer());
     }
 }
 
