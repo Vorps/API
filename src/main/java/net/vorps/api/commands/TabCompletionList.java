@@ -1,5 +1,6 @@
 package net.vorps.api.commands;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -8,6 +9,6 @@ import java.util.Set;
 @FunctionalInterface
 public interface TabCompletionList {
 
-    Set<String> getList(String[] args, String sender, String[] playerList);
+    List<String> getList();
 
 }

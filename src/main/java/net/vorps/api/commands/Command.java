@@ -1,102 +1,238 @@
 package net.vorps.api.commands;
 
-import net.vorps.api.cooldowns.CoolDowns;
-import net.vorps.api.lang.Lang;
-import net.vorps.api.players.PlayerData;
-import net.vorps.api.utils.Settings;
-import net.vorps.api.utils.StringBuilder;
 import lombok.AllArgsConstructor;
+import net.vorps.api.cooldowns.CoolDowns;
 import lombok.Getter;
-import lombok.Setter;
+import net.vorps.api.lang.Lang;
+import org.javatuples.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Project Bungee Created by Vorps on 02/04/2017 at 22:12.
  */
 public class Command {
 
-    private @Getter String name;
-    private int time;
-    private @Getter @Setter String lang;
-    private @Getter @Setter boolean stateExec;
-    private @Getter String[] permissions;
-    private String color;
-    private CommandSystem[] commandSystems;
-    private int nHelp;
-    private int nPage;
+    @AllArgsConstructor
+    private static class CommandMethod{
+        private final Method method;
+        private final CommandPermission[] commandPermission;
+        private final ArrayList<String> parameter;
+    }
+
+    private @Getter final String name;
+    private final int time;
+    private final String color = "§4";
+    public HashMap<String, CommandMethod> commandMethods;
+    public Set<String> methodsName = new HashSet<>();
+    private final int NB_HELP_PER_PAGE = 4;
 
     /**
      * Construire une commande
      * @param nameCommand String - Name
-     * @param permissions String[] - Liste des permission par argument
-     * @param color String - Couleur de l'aide
-     * @param nHelp int - Nombre de d'aide par page
      * @param time int - Temps de cooldown de la commande
-     * @param commandSystems CommandSystem - Action de la commande
      */
-    public Command(String nameCommand, String[] permissions, String color, int nHelp, int time, CommandSystem... commandSystems) {
+    public Command(String nameCommand, int time, Class<?> command) {
         this.name = nameCommand;
         this.time = time;
-        this.stateExec = false;
-        this.permissions = permissions;
-        this.color = color;
-        this.nHelp = nHelp;
-        this.setCommandSystems(commandSystems);
+        this.commandMethods = new HashMap<>();
+        for (Method method : Arrays.stream(command.getDeclaredMethods()).filter((m) -> Modifier.isStatic(m.getModifiers())).collect(Collectors.toList())) {
+            ArrayList<String> nameParameter = new ArrayList<>();
+            boolean tab = false;
+            for(Parameter parameter : method.getParameters()){
+                if(parameter.getAnnotationsByType(CommandParameter.class).length == 1){
+                    nameParameter.add(parameter.getAnnotationsByType(CommandParameter.class)[0].value());
+                }
+                tab = parameter.getType().equals(String[].class);
+            }
+            this.commandMethods.put(method.getName()+(tab ? "" : ":"+method.getParameterCount()), new CommandMethod(method, method.getAnnotationsByType(CommandPermission.class), nameParameter));
+            this.methodsName.add(method.getName());
+        }
     }
 
-    public boolean execute(CommandSender sender, String[] args) {
-        if (this.hasPermission(sender)){
-            this.stateExec = false;
-            this.lang = PlayerData.isPlayerDataCore(sender.getName()) ? PlayerData.getPlayerDataCore(sender.getName()).getLang() : Settings.getConsoleLang();
-            if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("help")) {
-                this.helpFunction(sender, new String[0], args.length == 2 ? args[1] : null);
-                this.stateExec = true;
+    private void invokeMethod(Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
+        int i = 0;
+        Object[] argument = new Object[method.getParameters().length];
+        for(Parameter parameter : method.getParameters()){
+            if (String[].class.equals(parameter.getType())) {
+                argument[i] = Arrays.stream(args).map(Object::toString).skip(i).collect(Collectors.toList()).toArray(new String[args.length-i]);
             } else {
-                if(isEnable(sender.getName())){
-                    net.vorps.api.commands.Command.CoupleCommandSystem[] coupleCommandSystems = this.getCoupleCommand(sender, args, true);
-                    for (net.vorps.api.commands.Command.CoupleCommandSystem coupleCommandSystem : coupleCommandSystems) {
-                        if (coupleCommandSystem.commandArg.length <= args.length && isValid(sender, coupleCommandSystem, args)) {
-                            this.stateExec = true;
-                            coupleCommandSystem.commandSystem.getCommandExecute().execute(args);
+                argument[i] = args[i];
+                i++;
+            }
+        }
+        method.invoke(null, argument);
+    }
+    public boolean execute(CommandSender commandSender, String[] args)  {
+        if(args.length == 0) {
+            this.helpFunction(commandSender, 0);
+        } else {
+            if (args[0].equalsIgnoreCase("help")) {
+                int page = 0;
+                if(args.length == 2) {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException ignored){}
+                }
+                this.helpFunction(commandSender, page);
+            } else {
+                CommandMethod commandMethod = null;
+                int i = 1;
+                if(this.commandMethods.containsKey(args[0]+":"+args.length)) commandMethod = this.commandMethods.get(args[0]+":"+args.length);
+                else if(this.commandMethods.containsKey(args[0])) commandMethod = this.commandMethods.get(args[0]);
+                else if(this.commandMethods.containsKey(this.name+":"+(args.length+1))) {
+                    commandMethod = this.commandMethods.get(this.name + ":" + (args.length + 1));
+                    i = 0;
+                } else if(this.commandMethods.containsKey(this.name)){
+                    commandMethod = this.commandMethods.get(this.name);
+                    i = 0;
+                }
+                if(commandMethod != null){
+                    if(this.hasPermission(commandSender, commandMethod)){
+                        if(this.isEnable(commandSender.getName())) {
+                            try {
+                                ArrayList<Object> argument = new ArrayList<>();
+                                argument.add(commandSender);
+                                argument.addAll(Arrays.asList(args).subList(i, args.length));
+                                this.invokeMethod(commandMethod.method, argument.toArray());
+                            } catch (Exception ignored) {
+                                ignored.printStackTrace();
+                                helpFunction(commandSender, Collections.singleton(commandMethod.method.getName()));
+                            }
                         }
                     }
-                    this.helpFunction(sender, args);
+                } else {
+                    if(this.methodsName.contains(args[0])) helpFunction(commandSender,  Collections.singleton(args[0]));
+                    else if(this.methodsName.contains(this.name)) helpFunction(commandSender,  Collections.singleton(this.name));
+                    else  helpFunction(commandSender, 1);
+
                 }
             }
         }
         return true;
     }
 
-    public List<String> onTabComplete(CommandSender sender, String[] args){
-        List<String> matches = new ArrayList<>();
-        switch (args.length) {
-            case 1:
-                if (this.hasPermission(sender)) if (args[0].toLowerCase().startsWith("help")) matches.add("help");
-                break;
-            case 2:
-                if (this.hasPermission(sender) && args[0].equalsIgnoreCase("help"))
-                    for (int i = 1; i <= this.nPage; i++) matches.add("" + i);
-                break;
-            default:
-                break;
-        }
-        for (net.vorps.api.commands.Command.CoupleCommandSystem coupleCommandSystem : this.getCoupleCommand(sender, args, false)) { //Donne tout les arguments possible
-            if (coupleCommandSystem.commandArg.length >= args.length) {
-                if (!coupleCommandSystem.commandArg[args.length - 1].isState())
-                    matches.add(coupleCommandSystem.commandArg[args.length - 1].getArg());
-                else if (coupleCommandSystem.commandArg[args.length - 1].getList() != null)
-                    matches.addAll(coupleCommandSystem.commandArg[args.length - 1].getList().getList(args, sender.getName(), new String[0]));
+    private Pair<List<String>, Boolean> getCompletion(String value){
+        for(TabCompletionType tabCompletionType : TabCompletionType.values())
+            if(tabCompletionType.name().equals(value.toUpperCase())){
+                return new Pair<>(tabCompletionType.getList().getList(), true);
+            }
+        return new Pair<>(new ArrayList<>(Collections.singleton(value)), false);
+    }
+
+    public List<String> onTabComplete(CommandSender commandSender, String[] args){
+        Set<String> matches = new HashSet<>();
+        if (commandSender.hasPermissionStartWith(this.name)){
+            switch (args.length) {
+                case 1:
+                    matches.add("help");
+                    for(CommandMethod commandMethod : this.commandMethods.values()){
+                        if(this.hasPermission(commandSender, commandMethod)){
+                            if(!commandMethod.method.getName().equals(this.name)){
+                                    matches.add(commandMethod.method.getName());
+                            } else {
+                                if(commandMethod.parameter.size() > 0){
+                                    matches.addAll(this.getCompletion(commandMethod.parameter.get(0)).getValue0());
+                                }
+                            }
+                        }
+
+                    }
+                    break;
+                case 2:
+                    if (args[0].equalsIgnoreCase("help"))
+                        for (int i = 1; i <= (int) Math.ceil(this.commandMethods.values().size()/((double)NB_HELP_PER_PAGE)); i++) matches.add(Integer.toString(i));
+                    break;
+                default:
+                    break;
             }
         }
+        if(args.length > 1){
+            matches.addAll(this.getCommandMethod(commandSender, args));
+        }
         matches = this.getList(matches, args[args.length - 1]);
-        return matches;
+        return new ArrayList<>(matches);
     }
+
+    private  Set<String> getCommandMethod(CommandSender commandSender, String[] args){
+        Set<String> result = new HashSet<>();
+        for(CommandMethod commandMethod : this.commandMethods.values()) {
+            if(this.hasPermission(commandSender, commandMethod)){
+                int startArgs = 0;
+                if(commandMethod.method.getName().equals(args[0])) startArgs = 1;
+                else if(!commandMethod.method.getName().equals(this.name)) continue;
+                boolean ok = commandMethod.parameter.size() >= args.length-startArgs;
+                Pair<List<String>, Boolean> completion = null;
+                for(int i = startArgs; i < args.length-1 && ok; i++){
+                    completion = this.getCompletion(commandMethod.parameter.get(i-startArgs));
+                    if(completion.getValue1()){
+                        if(!completion.getValue0().contains(args[i])){
+                            ok = false;
+                        }
+                    }
+
+                }
+                if(ok) result.addAll(this.getCompletion(commandMethod.parameter.get(args.length-startArgs-1)).getValue0());
+            }
+        }
+        return result;
+    }
+
+    private void helpFunction(CommandSender sender, Set<String> nameMethod) {
+        if(sender.hasPermissionStartWith(this.name)){
+            sender.sendMessage(this.color + "┌─────────────────────────────────┐");
+            sender.sendMessage(this.color + "│");
+            sender.sendMessage(this.color + "├ §e► §9§lHelp " + name.toUpperCase() +" " +Lang.getMessage("CMD." + this.name.toUpperCase() + ".HELP", sender.getLang() ) + " §e◄");
+            sender.sendMessage(this.color + "│");
+            String lang = sender.getLang();
+            for(String help :  this.helpFunction(sender, this.commandMethods.values().stream().filter(e -> nameMethod.contains(e.method.getName())).collect(Collectors.toCollection(ArrayList::new)), lang)) sender.sendMessage(help);
+            sender.sendMessage(this.color + "│");
+            sender.sendMessage(this.color + "└─────────────────────────────────┘");
+        }
+    }
+
+    private boolean hasPermission(CommandSender commandSender, CommandMethod commandMethod){
+        return commandSender.hasPermission(Arrays.stream(commandMethod.commandPermission).map(e -> this.name + "." + (this.name.equals(commandMethod.method.getName()) ? "" : commandMethod.method.getName()+ ".") + e.value()).collect(Collectors.toCollection(ArrayList::new))) && (Arrays.stream(commandMethod.commandPermission).map(CommandPermission::console).reduce(true, (last, next) -> last & next) || commandSender.isPlayer());
+    }
+    private ArrayList<String> helpFunction(CommandSender commandSender, Collection<CommandMethod> commandMethods, String lang){
+        ArrayList<String> help = new ArrayList<>();
+        for(CommandMethod commandMethod : commandMethods){
+            if(this.hasPermission(commandSender, commandMethod)){
+                StringBuilder stringBuilder = new StringBuilder(this.color + "│ "+this.name.toLowerCase()+(this.name.toLowerCase().equals(commandMethod.method.getName().toLowerCase()) ? "": " "+commandMethod.method.getName().toLowerCase())+" §6");
+                for(String nameParameter : commandMethod.parameter){
+                    stringBuilder.append("<").append(nameParameter).append(">").append(" ");
+                }
+                stringBuilder.append(Lang.getMessage("CMD." + this.name.toUpperCase()+(this.name.toLowerCase().equals(commandMethod.method.getName().toLowerCase()) ? "" : "."+commandMethod.method.getName().toUpperCase())+"."+ Arrays.stream(commandMethod.commandPermission).map(CommandPermission::value).reduce("", (last, next) -> last+next).toUpperCase()+".HELP", lang));
+                help.add(stringBuilder.toString());
+            }
+        }
+        return help;
+    }
+
+    private void helpFunction(CommandSender sender, int page) {
+        if(sender.hasPermissionStartWith(this.name)){
+            if(this.commandMethods.values().size() < page * NB_HELP_PER_PAGE) page = (int) Math.ceil(this.commandMethods.values().size()/((double)NB_HELP_PER_PAGE));
+            if(page < 1) page = 1;
+            sender.sendMessage(this.color + "┌─────────────────────────────────┐");
+            sender.sendMessage(this.color + "│");
+            sender.sendMessage(this.color + "├ §e► §9§lHelp " + name.toUpperCase() + "§a(§6" + page + "§a/§6" + ((int) Math.ceil(this.commandMethods.size()/((double)NB_HELP_PER_PAGE))) + "§a)   " + Lang.getMessage("CMD." + this.name.toUpperCase() + ".HELP", sender.getLang() ) + " §e◄");
+            sender.sendMessage(this.color + "│");
+            ArrayList<CommandMethod> commandMethods = new ArrayList<>(this.commandMethods.values());
+            for(String help : this.helpFunction(sender, commandMethods.subList((page-1)*NB_HELP_PER_PAGE, Math.min(commandMethods.size(), page * NB_HELP_PER_PAGE)), sender.getLang())) sender.sendMessage(help);
+            sender.sendMessage(this.color + "│");
+            sender.sendMessage(this.color + "└─────────────────────────────────┘");
+        }
+    }
+
 
     private boolean isEnable(String name) {
         boolean state = false;
+        if(this.time > 0) return true;
         if (!CoolDowns.hasCoolDown(name, this.name)) {
             new CoolDowns(name, this.time, this.name);
             state = true;
@@ -110,213 +246,11 @@ public class Command {
         return state;
     }
 
-
-    public void setCommandSystems(CommandSystem... commandSystems) {
-        int i = 0;
-        int y = 0;
-        for (CommandSystem commandSystem : commandSystems) {
-            commandSystem.setIndexHelp(y++);
-            if (commandSystem.getCondition().getIndexPerm() != -1)
-                commandSystem.getCondition().setIndexPerm(i++);
-        }
-        this.commandSystems = commandSystems;
-    }
-
-    private boolean isValid(CommandSender sender, CoupleCommandSystem coupleCommandSystem, String[] args) {
-        boolean state = true;
-        int i = 0;
-        for (CommandArg commandArg : coupleCommandSystem.commandArg) {
-            if (!commandArg.isState()) {
-                if (!commandArg.getArg().equalsIgnoreCase(args[i])) {
-                    state = false;
-                    break;
-                }
-            } else {
-                if ((commandArg.getList() != null && commandArg.getList().getList(args, sender.getName(), new String[0]).contains(args[i])) || commandArg.getList() != null) {
-                    state = false;
-                    break;
-                }
-            }
-            i++;
-        }
-        return state;
-    }
-
-    private List<String> getList(List<String> list, String args) {
-        List<String> listResult = new ArrayList<>();
+    private Set<String> getList(Set<String> list, String args) {
+        Set<String> listResult = new HashSet<>();
         for (String s : list) if (s.toLowerCase().startsWith(args.toLowerCase())) listResult.add(s);
         return listResult;
     }
 
-
-    @AllArgsConstructor
-    private class CoupleCommandSystem {
-        private CommandSystem commandSystem;
-        private CommandArg[] commandArg;
-    }
-
-    private CoupleCommandSystem[] getCoupleCommand(CommandSender sender, String[] args, boolean state) {
-        ArrayList<CoupleCommandSystem> coupleCommandSystems = new ArrayList<>();
-        ArrayList<ArrayList<CommandArg>> commandArgsTmp = new ArrayList<>();
-        ArrayList<CommandSystem> commandSystems = new ArrayList<>();
-        for (CommandSystem commandSystem : this.commandSystems) {
-            if (this.isStatePerm(sender, commandSystem.getCondition())) {
-                ArrayList<CommandArg> commandArgsTmp1 = new ArrayList<>();
-                for (CommandArg commandArg : commandSystem.getArgs()) {
-                    if (this.isStatePerm(sender, commandArg.getCondition())) commandArgsTmp1.add(commandArg);
-                }
-                commandArgsTmp.add(commandArgsTmp1);
-                commandSystems.add(commandSystem);
-            }
-        }
-
-        ArrayList<CommandArg> commandArgs = new ArrayList<>();
-        CommandSystem commandSystemsTmp = null;
-        int maxFind = 0;
-        int i = 0;
-        int find = 0;
-        for (ArrayList<CommandArg> commandArg : commandArgsTmp) {
-            commandArgs = new ArrayList<>();
-            if (args.length == (state ? 0 : 1)) {
-                if (!commandArg.isEmpty()) commandArgs.addAll(commandArg);
-                coupleCommandSystems.add(new CoupleCommandSystem(commandSystems.get(i), StringBuilder.convert(commandArgs, new CommandArg[commandArgs.size()])));
-            } else {
-                for (int y = 0, z = 0; y < commandArg.size() && y < args.length; y++) {
-                    if (!commandArg.get(y).isState()) {
-                        System.out.println(commandArg.get(y).getArg() + " : " + args[y]);
-                        if (commandArg.get(y).getArg().equalsIgnoreCase(args[y]) && z++ == y && maxFind <= y) {
-                            find = i;
-                            commandSystemsTmp = commandSystems.get(i);
-                            System.out.println(commandArg.get(y).getArg());
-                            maxFind = y;
-                        }
-                    } else {
-                        if ((commandArg.get(y).getList() != null && commandArg.get(y).getList().getList(args, sender.getName(), new String[0]).contains(args[y]) && z++ == y && maxFind <= y) || commandArg.get(y).getList() != null) {
-                            find = i;
-                            System.out.println(commandArg.get(y).getArg());
-                            commandSystemsTmp = commandSystems.get(i);
-                            maxFind = y;
-                        }
-                    }
-                }
-            }
-            i++;
-        }
-        if (commandSystemsTmp != null) {
-            commandArgs.addAll(commandArgsTmp.get(find));
-            if (!commandArgs.isEmpty())
-                coupleCommandSystems.add(new CoupleCommandSystem(commandSystemsTmp, StringBuilder.convert(commandArgs, new CommandArg[commandArgs.size()])));
-        }
-        return StringBuilder.convert(coupleCommandSystems, new CoupleCommandSystem[coupleCommandSystems.size()]);
-    }
-
-    private void helpFunction(CommandSender sender, String[] args, String... pageArg) {
-        if (!this.stateExec && this.commandSystems != null) {
-            this.nPage = getNbPage(sender);
-            int page = pageArg.length != 0 && pageArg[0] != null ? this.getPage(pageArg[0]) : 1;
-            CoupleCommandSystem[] coupleCommandSystems = this.getCoupleCommand(sender, args, true);
-            sender.sendMessage(this.color + "┌─────────────────────────────────┐");
-            sender.sendMessage(this.color + "│");
-            sender.sendMessage(this.color + "├ §e► §9§lHelp " + name.toUpperCase() + " " + (coupleCommandSystems.length == 1 ? "§a(§6" + new StringBuilder(coupleCommandSystems[0].commandArg[0].getArg()).toUpperFirstLetter().getString() + "§a)" : "§a(§6" + page + "§a/§6" + this.nPage + "§a)   " + Lang.getMessage("BUNGEE.CMD." + name.toUpperCase() + ".HELP", this.lang)) + " §e◄");
-            sender.sendMessage(this.color + "│");
-            getHelp(sender, page, coupleCommandSystems.length > 0 ? coupleCommandSystems : this.getCoupleCommand(sender, new String[0], true));
-            sender.sendMessage(this.color + "│");
-            sender.sendMessage(this.color + "└─────────────────────────────────┘");
-        }
-    }
-
-
-    /**
-     * Indique si le sender a une permission
-     * @return boolean
-     */
-    public boolean hasPermission(CommandSender sender) {
-        boolean state = false;
-        for (String perm : this.permissions) {
-            if (sender.hasPermission(perm)) {
-                state = true;
-                break;
-            }
-        }
-        return state;
-    }
-
-    /**
-     * Indique si le sender a la permission
-     * @param index int
-     * @return boolean
-     */
-    public boolean hasPermission(CommandSender sender, int index) {
-        return sender.hasPermission(this.permissions[index]);
-    }
-
-    private int getPage(String page) {
-        int pageResult = 0;
-        try {
-            pageResult = Integer.parseInt(page);
-        } catch (NumberFormatException e) {
-            //
-        }
-        return pageResult > this.nPage ? this.nPage : pageResult <= 0 ? 1 : pageResult;
-    }
-
-    private int getNbPage(CommandSender sender) {
-        int i = 0;
-        for (CommandSystem help : this.commandSystems) if (this.isStatePerm(sender, help.getCondition())) i++;
-        return i / this.nHelp + (i % this.nHelp == 0 ? 0 : 1);
-    }
-
-    private void getHelp(CommandSender sender, int page, CoupleCommandSystem[] coupleCommandSystems) {
-        if (coupleCommandSystems.length == 1) this.getHelpPlayer(sender, coupleCommandSystems[0]);
-        else for (int i = (page - 1) * this.nHelp; i < page * this.nHelp && i < coupleCommandSystems.length; i++)
-            this.getHelpPlayer(sender, coupleCommandSystems[i]);
-    }
-
-    private void getHelpPlayer(CommandSender sender, CoupleCommandSystem coupleCommandSystem) {
-        for (String messageTmp : this.getMessage(this.color + "├ §7■§e §b/§9" + name + this.getHelp(coupleCommandSystem.commandArg)[1] + " §b◊ " + this.getHelp(coupleCommandSystem.commandArg)[0] + " §b► §7" + Lang.getMessage("BUNGEE.CMD." + name.toUpperCase() + ".HELP_" + coupleCommandSystem.commandSystem.getIndexHelp(), this.lang)))
-            sender.sendMessage(messageTmp);
-    }
-
-    private String[] getMessage(String message) {
-        ArrayList<String> messageResult = new ArrayList<>();
-        StringBuilder messageReal = new StringBuilder("", "");
-        ArrayList<Integer> test = new ArrayList<>();
-
-        int y = 0;
-        for (int i = 0; i < message.length(); i++) {
-            if (message.charAt(i) == '§') {
-                test.add(i - (test.size() * 2));
-                messageReal.append(message.substring(y, i));
-                y = i + 2;
-            }
-        }
-        if (y < message.length()) messageReal.append(message.substring(y, message.length()));
-        if (messageReal.getString().length() > 61) {
-            for (int i = 61; i > 0; i--) {
-                if (messageReal.getString().charAt(i) == ' ') {
-                    int z;
-                    for (z = 0; z < test.size() && test.get(z) < i; z++) ;
-                    messageResult.add(message.substring(0, i + (z * 2)));
-                    messageResult.add(this.color + "├ §7" + message.substring(i + (z * 2), message.length()));
-                    break;
-                }
-            }
-        } else messageResult.add(message);
-        return StringBuilder.convert(messageResult, new String[messageResult.size()]);
-    }
-
-    private String[] getHelp(CommandArg[] commandArgs) {
-        StringBuilder helpCurrent = new StringBuilder();
-        StringBuilder helpMessage = new StringBuilder();
-        for (CommandArg arg : commandArgs) {
-            if (arg.isState()) helpCurrent.append("§b[§e" + arg.getArg() + "§b]");
-            else helpMessage.append("§b" + arg.getArg());
-        }
-        return new String[]{helpCurrent.getString(), helpMessage.getString()};
-    }
-
-    private boolean isStatePerm(CommandSender sender, Condition var) {
-        return var.isStatePerm() == (var.getIndexPerm() < 0 || var.getIndexPerm() > permissions.length || hasPermission(sender, var.getIndexPerm())) && (var.getCondition() == null || var.getCondition().condition()) && (!var.isPlayer() || sender.isPlayer());
-    }
 }
 

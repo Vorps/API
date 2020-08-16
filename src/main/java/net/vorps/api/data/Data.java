@@ -4,6 +4,7 @@ import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.databases.Database;
 import net.vorps.api.databases.DatabaseManager;
 import lombok.Getter;
+import net.vorps.api.utils.Settings;
 
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -30,14 +31,7 @@ public abstract class Data {
         FORMAT_HOUR_MINUTE_SECOND = new SimpleDateFormat("HH:mm:ss");
         FORMAT_DAY_MONTH_YEAR = new SimpleDateFormat("dd/MM/yyyy");
         FORMAT_DAY_MONTH_YEAR_HOUR_MINUTE_SECOND = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    }
-
-
-    public static DatabaseManager database;
-
-
-    public static void setDatabase(DatabaseManager database){
-        Data.database = database;
+        Data.loadListPlayer();
     }
 
     public static void loadListPlayer(){
@@ -56,6 +50,7 @@ public abstract class Data {
 
 
 
+
     public static boolean isUUID(String uuid){
         return uuid.split("-").length == 5;
     }
@@ -68,7 +63,9 @@ public abstract class Data {
         return Data.listPlayerUUID.containsKey(uuid);
     }
 
-    public static UUID getUUIDPlayer(String namePlayer){return Data.listPlayerString.get(namePlayer);}
+    public static UUID getUUIDPlayer(String namePlayer){
+        return Data.listPlayerString.get(namePlayer);
+    }
 
     public static String getNamePlayer(UUID uuid){return Data.listPlayerUUID.get(uuid);}
 

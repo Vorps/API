@@ -1,6 +1,7 @@
 package net.vorps.api.data;
 
 import net.vorps.api.Exceptions.SqlException;
+import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.lang.LangSetting;
 import net.vorps.api.objects.*;
@@ -15,6 +16,14 @@ import java.sql.SQLException;
 
 public class DataCore extends Data{
 
+
+    private static DatabaseManager database;
+
+
+    public static void setDatabase(DatabaseManager database){
+        DataCore.database = database;
+    }
+
     private static DataCore instance;
 
     public static DataCore getInstance() {
@@ -22,11 +31,11 @@ public class DataCore extends Data{
         return DataCore.instance;
     }
 
-    public void loadParticle(){
+    public static void loadParticle(){
         Particle.clear();
         ResultSet results;
         try {
-            results = Data.database.getData("particle");
+            results = DataCore.database.getData("particle");
             while(results.next()) new Particle(results);
         } catch (SQLException e){
             //
@@ -39,7 +48,7 @@ public class DataCore extends Data{
         LangSetting.clearLangSetting();
         ResultSet results;
         try {
-            results = Data.database.getData("lang_setting");
+            results = DataCore.database.getData("lang_setting");
             while(results.next()) new LangSetting(results);
         } catch (SQLException e){
             //
@@ -52,7 +61,7 @@ public class DataCore extends Data{
         Lang.clearLang();
         ResultSet results;
         try {
-            results = Data.database.getData("lang");
+            results = DataCore.database.getData("lang");
             while(results.next()) new Lang(results);
         } catch (SQLException e){
             //
@@ -64,7 +73,7 @@ public class DataCore extends Data{
     public void loadMoney(){
         Money.clear();
         try {
-            ResultSet results = Data.database.getData("money");
+            ResultSet results = DataCore.database.getData("money");
             while(results.next()) new Money(results);
         } catch (SQLException e){
             //
@@ -76,7 +85,7 @@ public class DataCore extends Data{
     public void loadInteractMessage(){
         InteractMessage.clear();
         try {
-            ResultSet resultSet = Data.database.getData("interact_message");
+            ResultSet resultSet = DataCore.database.getData("interact_message");
             while (resultSet.next()) new InteractMessage(resultSet);
         } catch (SqlException | SQLException e){
             e.printStackTrace();
@@ -86,7 +95,7 @@ public class DataCore extends Data{
     public void loadBonus(){
         Bonus.clear();
         try {
-            ResultSet resultSet = Data.database.getData("bonus");
+            ResultSet resultSet = DataCore.database.getData("bonus");
             while (resultSet.next()) new Bonus(resultSet);
         } catch (SqlException | SQLException e){
             e.printStackTrace();
@@ -96,7 +105,7 @@ public class DataCore extends Data{
     public void loadRank(){
         Rank.clear();
         try {
-            ResultSet resultSet = Data.database.getData("rank");
+            ResultSet resultSet = DataCore.database.getData("rank");
             while (resultSet.next()) new Rank(resultSet);
         } catch (SqlException | SQLException e){
             e.printStackTrace();
@@ -107,7 +116,7 @@ public class DataCore extends Data{
         Settings.clear();
         ResultSet results;
         try {
-            results = Data.database.getData("setting");
+            results = DataCore.database.getData("setting");
             while(results.next()) new Settings(results);
         } catch (SQLException e){
             //
@@ -121,7 +130,7 @@ public class DataCore extends Data{
         Location.clear();
         ResultSet results;
         try {
-            results = Data.database.getData("location");
+            results = DataCore.database.getData("location");
             while (results.next()) {
                 new Location(results);
             }
@@ -136,7 +145,7 @@ public class DataCore extends Data{
         Limite.clear();
         ResultSet results;
         try {
-            results = Data.database.getData("limite");
+            results = DataCore.database.getData("limite");
             while (results.next()) {
                 new Limite(results);
             }
@@ -151,7 +160,7 @@ public class DataCore extends Data{
         Item.clear();
         ResultSet results;
         try {
-            results = Data.database.getData("item");
+            results = DataCore.database.getData("item");
             while (results.next()) new Item(results);
         } catch (SQLException e){
             //
@@ -163,7 +172,7 @@ public class DataCore extends Data{
     public void loadFireWork(){
         Firework.clear();
         try {
-            ResultSet results = Data.database.getData("firework");
+            ResultSet results = DataCore.database.getData("firework");
             while (results.next()) {
                 new Firework(results);
             }
@@ -177,8 +186,8 @@ public class DataCore extends Data{
     public void loadBookHelp(){
         BookHelp.clear();
         try{
-            ResultSet results = Data.database.getData("book");
-            while(results.next()) new BookHelp(results, false, Data.database);
+            ResultSet results = DataCore.database.getData("book");
+            while(results.next()) new BookHelp(results, false, DataCore.database);
         }catch(SQLException e){
             //
         }catch (SqlException e) {
@@ -189,7 +198,7 @@ public class DataCore extends Data{
     public void loadMessageTitle(){
         MessageTitle.clear();
         try {
-            ResultSet results = Data.database.getData("message_title");
+            ResultSet results = DataCore.database.getData("message_title");
             while (results.next()) {
                 new MessageTitle(results);
             }

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.objects.Rank;
+import net.vorps.api.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -27,7 +28,7 @@ public abstract class PlayerData {
 
     protected @Getter final UUID uuid;
     protected @Getter final String name;
-    private @Getter String nickName;
+    private  @Getter @Setter String nickName;
     protected  @Getter @Setter String lang;
 
     protected PlayerData(UUID uuid, String name) {
@@ -38,28 +39,35 @@ public abstract class PlayerData {
         PlayerData.playerDataList.put(name, this);
     }
 
+
+
     public void removePlayerData(){
-        try {
-            Data.database.updateTable("player", "p_uuid = '" + this.uuid + "'", new DatabaseManager.Values("p_online", false), new DatabaseManager.Values("p_date_last", new java.util.Date(System.currentTimeMillis())));
-        } catch (SqlException e) {
-            e.printStackTrace();
-        }
+        PlayerData.playerDataUUIDList.remove(this.uuid);
         PlayerData.playerDataList.remove(this.name);
     }
 
     private static HashMap<String, PlayerData> playerDataList = new HashMap<>();
+    private static HashMap<UUID, PlayerData> playerDataUUIDList = new HashMap<>();
 
 
     static {
         PlayerData.playerDataList = new HashMap<>();
+        PlayerData.playerDataUUIDList = new HashMap<>();
     }
 
     public static PlayerData getPlayerDataCore(String name) {
         return PlayerData.playerDataList.get(name);
     }
+    public static PlayerData getPlayerDataCore(UUID uuid) {
+        return PlayerData.playerDataUUIDList.get(uuid);
+    }
 
     public static boolean isPlayerDataCore(String name) {
-        return PlayerData.playerDataList.keySet().contains(name);
+        return PlayerData.playerDataList.containsKey(name);
+    }
+
+    public static boolean isPlayerDataCore(UUID uuid) {
+        return PlayerData.playerDataUUIDList.containsKey(uuid);
     }
 
     public Player getPlayer(){
@@ -210,13 +218,16 @@ public abstract class PlayerData {
     }
 
     public static String getLang(UUID uuid) {
-        String lang = null;
-        try {
-            lang = PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getString("ps_lang");
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if(PlayerData.isPlayerDataCore(uuid)){
+            return PlayerData.getPlayerDataCore(uuid).getLang();
+        } else if(uuid != null && Data.isPlayer(uuid)){
+            try {
+                return PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getString("ps_lang");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        return lang;
+        return Settings.getConsoleLang();
     }
 
     public static void setLang(UUID uuid, String lang) {
@@ -279,36 +290,9 @@ public abstract class PlayerData {
         }
     }
 
-   /* public static void addNotification(UUID uuid, String message, Type type) {
-        String message1 = "";
-        for (int i = 0; i < message.length(); i++) {
-            if (message.charAt(i) == '\'') message1 += "\\'";
-            else message1 += message.charAt(i);
-        }
+    public static void addNotification(UUID uuid, String message) {
         try {
-            Database.BUNGEE.getDatabase().sendRequest("INSERT INTO `notification`(`n_uuid`, `n_message`, `n_date`, `n_type`) VALUES ('" + uuid + "','" + message1 + "','" + new Timestamp(System.currentTimeMillis()) + "','" + type.label + "')");
-        } catch (SqlException e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    public static ArrayList<String> getNotification(UUID uuid) {
-        ArrayList<String> notification = new ArrayList<>();
-        try {
-            ResultSet resultSet = Database.BUNGEE.getDatabase().getData("notification", "n_uuid = '" + uuid.toString() + "'");
-            while (resultSet.next()) notification.add(resultSet.getString("n_message"));
-            Database.BUNGEE.getDatabase().delete("notification", "n_uuid = '" + uuid.toString() + "'");
-        } catch (SQLException e) {
-            //
-        } catch (SqlException e) {
-            e.printStackTrace();
-        }
-        return notification;
-    }
-
-    public static void setNickName(UUID uuid, String nickname) {
-        try {
-            Database.BUNGEE.getDatabase().updateTable("player_setting", "ps_uuid = '" + uuid + "'", new DatabaseManager.Values("ps_nickname", nickname));
+            Database.BUNGEE.getDatabase().insertTable("notification", null, uuid.toString(), message, new Timestamp(System.currentTimeMillis()));
         } catch (SqlException e) {
             e.printStackTrace();
         }

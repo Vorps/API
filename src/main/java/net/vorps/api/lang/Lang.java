@@ -71,6 +71,7 @@ public class Lang {
         SPECTATOR,
         SPEED,
         REASON,
+        AUTHOR,
         CHANNEL;
         private final String label;
 
@@ -87,21 +88,23 @@ public class Lang {
     }
 
     public static String getMessage(String key, String langPlayer, Args... args){
-        String message;
-        switch (args.length){
-            case 0:
+        String message = "";
+        if (args.length == 0) {
+            if (lang.containsKey(key)) {
                 HashMap<String, String> messageHashMap = lang.get(key);
-                message = messageHashMap.get(langPlayer);
-                break;
-            case 1:
-                message = getMessage(key, langPlayer).replaceAll(args[0].parameter.label , args[0].value);
-                break;
-            default:
-                message = getMessage(key, langPlayer);
-                for(Args argsList : args){
-                    message = message.replaceAll(argsList.parameter.label , argsList.value);
+                if (messageHashMap.containsKey(langPlayer)) {
+                    message = messageHashMap.get(langPlayer);
+                } else {
+                    System.out.println("Erreur key language not found");
                 }
-                break;
+            } else {
+                System.out.println("Erreur key lang not found");
+            }
+        } else {
+            message = getMessage(key, langPlayer);
+            for (Args argsList : args) {
+                message = message.replaceAll(argsList.parameter.label, argsList.value);
+            }
         }
         return message;
     }

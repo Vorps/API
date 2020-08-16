@@ -1,11 +1,7 @@
 package net.vorps.api.utils;
 
-import net.vorps.api.Exceptions.SqlException;
-import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
 import lombok.Getter;
-import net.vorps.api.databases.DatabaseManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,8 +42,10 @@ public class Settings {
     }
 
     private static @Getter String consoleLang;
+    private static @Getter String console;
 
     public static void initSettings(){
-        Settings.consoleLang = Settings.getSettings("console_lang").getMessage();
+        Settings.consoleLang = Settings.getSettings("console_lang").message;
+        Settings.console = "CONSOLE";
     }
 }

@@ -8,8 +8,7 @@ import net.vorps.api.Exceptions.SqlException;
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
  */
 public enum Database{
-    BUNGEE("bd_bungee"),
-    CORE("bd_core");
+    BUNGEE("bd_bungee");
 
     private DatabaseManager database;
     private String nameDataBase;
