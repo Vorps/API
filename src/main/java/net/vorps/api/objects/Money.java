@@ -1,9 +1,7 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.DataCore;
 import lombok.Getter;
-import net.vorps.api.databases.DatabaseManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,7 +35,7 @@ public class Money{
 
     static {
         Money.listMoney = new HashMap<>();
-        DataCore.getInstance().loadMoney();
+        DataCore.loadMoney();
     }
 
     public static Money getMoney(String nameMoney){

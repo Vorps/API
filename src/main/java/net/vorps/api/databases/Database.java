@@ -2,8 +2,6 @@ package net.vorps.api.databases;
 
 import java.sql.SQLException;
 
-import net.vorps.api.Exceptions.SqlException;
-
 /**
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
  */
@@ -23,7 +21,7 @@ public enum Database{
         try {
             this.database = new DatabaseManager(nameDataBase);
             this.state = true;
-        } catch (SqlException e){
+        } catch (SQLException e){
             this.state = false;
             System.out.println("Impossible de se connecter à la base de donnée : "+nameDataBase+".\nVeuillez créer la base de données : "+nameDataBase+".");
             e.printStackTrace();
@@ -40,7 +38,7 @@ public enum Database{
             try {
                 this.database.getConnection().close();
                 this.database = new DatabaseManager(this.nameDataBase);
-            } catch (SqlException | SQLException err){
+            } catch (SQLException err){
                 err.printStackTrace();
             }
         }

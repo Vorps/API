@@ -30,7 +30,7 @@ public class Settings {
 
     static {
         Settings.settings = new HashMap<>();
-        DataCore.getInstance().loadSetting();
+        DataCore.loadSetting();
     }
 
     public static Settings getSettings(String key){

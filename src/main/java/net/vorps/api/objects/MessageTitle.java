@@ -4,11 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import net.vorps.api.Exceptions.SqlException;
-import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
-import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.lang.Lang;
 
 /**
@@ -37,7 +33,7 @@ public class MessageTitle {
 
     static  {
         MessageTitle.messageTitleList = new HashMap<>();
-        DataCore.getInstance().loadMessageTitle();
+        DataCore.loadMessageTitle();
     }
 
 

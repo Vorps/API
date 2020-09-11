@@ -1,14 +1,9 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.data.Data;
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.menu.ItemBuilder;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.potion.PotionType;
 
-import net.vorps.api.databases.Database;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.lang.LangSetting;
 import net.vorps.api.utils.Color;
@@ -30,7 +25,7 @@ public class Item {
     /**
      * Load item bdd
      * @param result ResultSet
-     * @throws SqlException
+     * @throws SQLException
      */
     public Item(final ResultSet result) throws SQLException {
         this.label = new HashMap<>();
@@ -74,7 +69,7 @@ public class Item {
 
     static {
         Item.listItem = new HashMap<>();
-        DataCore.getInstance().loadItem();
+        DataCore.loadItem();
     }
 
     /**

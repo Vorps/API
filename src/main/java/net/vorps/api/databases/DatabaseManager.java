@@ -4,7 +4,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import net.vorps.api.Exceptions.SqlException;
 
 /**
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
@@ -20,9 +19,9 @@ public class DatabaseManager {
     /**
      * Connect DataBase
      * @param nameDatabase String
-     * @throws SqlException
+     * @throws SQLException
      */
-    public DatabaseManager(String nameDatabase) throws SqlException {
+    public DatabaseManager(String nameDatabase) throws SQLException {
         this.nameDatabase = nameDatabase;
         String typeBDD = "mysql";
         String ip = "localhost";
@@ -36,15 +35,15 @@ public class DatabaseManager {
             Class.forName("com."+typeBDD+".jdbc.Driver");
             this.connection = DriverManager.getConnection("jdbc:"+typeBDD+"://"+ip+":"+port+"/"+nameDatabase+"?noAccessToProcedureBodies=true", connectionProps);
         } catch(ClassNotFoundException e){
-            throw new SqlException("Driver not found Please install driver "+typeBDD, new Throwable("Error, server no connected to database"));
+            throw new SQLException("Driver not found Please install driver "+typeBDD, new Throwable("Error, server no connected to database"));
         } catch (SQLException e){
-            throw new SqlException("Error, Server not connect to database", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Server not connect to database", new Throwable("Error, server no connected to database"));
         } catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    public boolean isTable(String table) throws SqlException{
+    public boolean isTable(String table) throws SQLException{
         boolean state;
         try {
             DatabaseMetaData dmd = this.connection.getMetaData();
@@ -52,7 +51,7 @@ public class DatabaseManager {
             state = tables.next();
             tables.close();
         } catch (SQLException e){
-            throw new SqlException("Error, Server not connect to database", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Server not connect to database", new Throwable("Error, server no connected to database"));
         }
         return state;
     }
@@ -74,13 +73,24 @@ public class DatabaseManager {
         return infoColumn;
     }
 
+    public ResultSet getDataUnique(final String table, final String condition) {
+        ResultSet resultSet = null;
+        try {
+            resultSet = this.getData(table, condition);
+            resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultSet;
+    }
+
     /**
      * Insert table
      * @param table
      * @param values
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void insertTable(String table, Object... values) throws SqlException{
+    public void insertTable(String table, Object... values) throws SQLException{
         try {
             Object[][] objects = getColumnName(table);
             String msgName = "";
@@ -100,7 +110,7 @@ public class DatabaseManager {
             preparedStatement.executeUpdate();
         } catch (SQLException e){
             e.printStackTrace();
-            throw new SqlException("Error, Data not send", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Data not send", new Throwable("Error, server no connected to database"));
         }
 
     }
@@ -108,15 +118,15 @@ public class DatabaseManager {
     /**
      * Delete value
      * @param table String
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void delete(String table) throws SqlException{
+    public void delete(String table) throws SQLException{
         try {
             Statement state = this.connection.createStatement();
             state.executeUpdate("DELETE FROM "+table);
             state.close();
         } catch(SQLException err) {
-            throw new SqlException("Error, Data not send", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Data not send", new Throwable("Error, server no connected to database"));
         }
     }
 
@@ -124,15 +134,15 @@ public class DatabaseManager {
      * Delete value with condition
      * @param table String
      * @param condition String
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void delete(String table, String condition) throws SqlException{
+    public void delete(String table, String condition) throws SQLException{
         try {
             Statement state = this.connection.createStatement();
             state.executeUpdate("DELETE FROM "+table+" WHERE "+condition);
             state.close();
         } catch(SQLException err) {
-            throw new SqlException("Error, Data not send", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Data not send", new Throwable("Error, server no connected to database"));
         }
     }
 
@@ -170,9 +180,9 @@ public class DatabaseManager {
      * @param table String
      * @param condition String
      * @param values Values...
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void updateTable(String table, String condition, String operator,Values... values) throws SqlException{
+    public void updateTable(String table, String condition, String operator,Values... values) throws SQLException{
         try {
             String msg = "";
             for(Values values1 : values){
@@ -184,7 +194,7 @@ public class DatabaseManager {
             }
             this.updateTable(this.connection.prepareStatement("UPDATE "+table+" SET "+msg.substring(0, msg.length()-1)+cond), table, values).executeUpdate();
         } catch(SQLException err) {
-            throw new SqlException("Error, Data not send", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Data not send", new Throwable("Error, server no connected to database"));
         }
     }
 
@@ -206,9 +216,9 @@ public class DatabaseManager {
      * @param table String
      * @param condition String
      * @param values Values...
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void updateTable(String table, String condition, Values... values) throws SqlException{
+    public void updateTable(String table, String condition, Values... values) throws SQLException{
         try {
             String msg = "";
             for(Values values1 : values){
@@ -221,7 +231,7 @@ public class DatabaseManager {
             this.updateTable(this.connection.prepareStatement("UPDATE "+table+" SET "+msg.substring(0, msg.length()-1)+cond), table, values).executeUpdate();
         } catch(SQLException err) {
             err.printStackTrace();
-            throw new SqlException("Error, Data not send", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Data not send", new Throwable("Error, server no connected to database"));
         }
     }
 
@@ -229,9 +239,9 @@ public class DatabaseManager {
      * Update Table
      * @param table String
      * @param values Values...
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void updateTable(String table, Values... values) throws SqlException{
+    public void updateTable(String table, Values... values) throws SQLException{
         updateTable(table, null, values);
     }
 
@@ -240,32 +250,33 @@ public class DatabaseManager {
      * Return data
      * @param table String
      * @return ResultSet
-     * @throws SqlException
+     * @throws SQLException
      */
-    public ResultSet getData(String table) throws SqlException {
+    public ResultSet getData(String table) throws SQLException {
         ResultSet results;
         try {
-            results = this.connection.createStatement().executeQuery("SELECT * FROM "+table);
+            if(this.connection.getMetaData().getTables(null, null, table, null).next())
+                return results = this.connection.createStatement().executeQuery("SELECT * FROM "+table);
         } catch (SQLException e){
             e.printStackTrace();
-            throw new SqlException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
         }
-        return results;
+        return null;
     }
     /**
      * Return data
      * @param table String
      * @param condition String
      * @return ResultSet
-     * @throws SqlException
+     * @throws SQLException
      */
-    public ResultSet getData(String table, String condition) throws SqlException {
+    public ResultSet getData(String table, String condition) throws SQLException {
         ResultSet results;
         try {
             results = this.connection.createStatement().executeQuery("SELECT * FROM "+table+" WHERE "+condition);
         } catch (SQLException e){
             e.printStackTrace();
-            throw new SqlException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
         }
         return results;
     }
@@ -275,14 +286,14 @@ public class DatabaseManager {
      * @param table String
      * @param column String
      * @return ResultSet
-     * @throws SqlException
+     * @throws SQLException
      */
-    public ResultSet getDataColumn(String table, String column) throws SqlException {
+    public ResultSet getDataColumn(String table, String column) throws SQLException {
         ResultSet results;
         try {
             results = this.connection.createStatement().executeQuery("SELECT "+column+" FROM "+table);
         } catch (SQLException e){
-            throw new SqlException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
         }
         return results;
     }
@@ -293,14 +304,14 @@ public class DatabaseManager {
      * @param column String
      * @param condition String
      * @return ResultSet
-     * @throws SqlException
+     * @throws SQLException
      */
-    public ResultSet getData(String table, String column, String condition) throws SqlException {
+    public ResultSet getData(String table, String column, String condition) throws SQLException {
         ResultSet results;
         try {
             results = this.connection.createStatement().executeQuery("SELECT "+column+" FROM "+table+" WHERE "+condition);
         } catch (SQLException e){
-            throw new SqlException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, impossible to recover the data", new Throwable("Error, server no connected to database"));
         }
         return results;
     }
@@ -308,16 +319,16 @@ public class DatabaseManager {
     /**
      * Send data to DataBase
      * @param request String
-     * @throws SqlException
+     * @throws SQLException
      */
-    public void sendRequest(String request) throws SqlException {
+    public void sendRequest(String request) throws SQLException {
         try
         {
             Statement state = this.connection.createStatement();
             state.executeUpdate(request);
             state.close();
         } catch(SQLException err) {
-            throw new SqlException("Error, Data not send", new Throwable("Error, server no connected to database"));
+            throw new SQLException("Error, Data not send", new Throwable("Error, server no connected to database"));
         }
     }
 

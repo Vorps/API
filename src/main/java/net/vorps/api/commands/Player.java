@@ -2,14 +2,10 @@ package net.vorps.api.commands;
 
 import net.vorps.api.lang.Lang;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
-public interface CommandSender {
-
+public interface Player {
     void sendMessage(String key, Lang.Args... args);
-    boolean hasPermission(ArrayList<String> permission);
-    boolean hasPermissionStartWith(String permission);
     String getName();
     UUID getUUID();
 }

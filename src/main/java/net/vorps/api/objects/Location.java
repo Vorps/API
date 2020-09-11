@@ -1,12 +1,8 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.DatabaseManager;
 import org.bukkit.Bukkit;
 
-import net.vorps.api.Exceptions.SqlException;
-import net.vorps.api.databases.Database;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -24,7 +20,7 @@ public class Location {
 
     static {
         Location.listLocation = new HashMap<>();
-        DataCore.getInstance().loadLocation();
+        DataCore.loadLocation();
     }
 
     public static void clear(){

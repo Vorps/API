@@ -2,6 +2,7 @@ package net.vorps.api;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.vorps.api.data.Data;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;

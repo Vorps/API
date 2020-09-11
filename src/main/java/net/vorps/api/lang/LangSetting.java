@@ -4,10 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import net.vorps.api.Exceptions.SqlException;
-import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
 
 /**
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
@@ -16,9 +13,9 @@ public class LangSetting {
 
     private static HashMap<String, LangSetting> listLangSetting;
 
-    private String name;
-    private String columnId;
-    private String nameDisplay;
+    private final String name;
+    private final String columnId;
+    private final String nameDisplay;
 
     public LangSetting(ResultSet result) throws SQLException {
         this.name = result.getString(1);
@@ -29,7 +26,7 @@ public class LangSetting {
 
     static {
         LangSetting.listLangSetting = new HashMap<>();
-        DataCore.getInstance().loadLangSetting();
+        DataCore.loadLangSetting();
     }
 
     public static HashMap<String, LangSetting> getListLangSetting(){

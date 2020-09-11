@@ -1,14 +1,12 @@
 package net.vorps.api.objects;
 
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.utils.Color;
 import org.bukkit.*;
 import org.bukkit.Location;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
 
-import net.vorps.api.Exceptions.SqlException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -89,7 +87,7 @@ public class Firework{
 
     static {
         Firework.listFirework = new HashMap<>();
-        DataCore.getInstance().loadFireWork();
+        DataCore.loadFireWork();
     }
 
     public static void clear(){

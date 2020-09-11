@@ -1,9 +1,7 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.lang.Lang;
 import lombok.AllArgsConstructor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -66,7 +64,7 @@ public class InteractMessage {
         for(int i = 1; i < args.length; i++){
             String[] a = new StringBuilder(args[i], ":").getArgs();
             Args args1 = new Args(Parameter.valueOf(a[0].toUpperCase()), a[1]);
-            stringBuilder.replace(args1.parameter.label, (Data.isUUID(args1.value) && Data.isPlayer(UUID.fromString(args1.value))) ? Data.getNamePlayer(args1.value) : args1.value);
+            //stringBuilder.replace(args1.parameter.label, (Data.isUUID(args1.value) && Data.isPlayer(UUID.fromString(args1.value))) ? Data.getNamePlayer(args1.value) : args1.value);
         }
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, stringBuilder.getString()));
         message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Lang.getMessage(this.lore, lang)).create()));
@@ -75,7 +73,7 @@ public class InteractMessage {
 
     static {
         InteractMessage.interactMessageList = new HashMap<>();
-        DataCore.getInstance().loadInteractMessage();
+        DataCore.loadInteractMessage();
     }
 
     private static HashMap<String, InteractMessage> interactMessageList;

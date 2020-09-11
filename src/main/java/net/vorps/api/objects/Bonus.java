@@ -1,9 +1,7 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.DataCore;
 import lombok.Getter;
-import net.vorps.api.databases.DatabaseManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,7 +31,7 @@ public class Bonus {
 
     static {
         Bonus.listBonus = new HashMap<>();
-        DataCore.getInstance().loadBonus();
+        DataCore.loadBonus();
     }
 
     public static void clear(){

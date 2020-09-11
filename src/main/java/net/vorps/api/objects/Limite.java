@@ -1,10 +1,6 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.data.Data;
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
-import net.vorps.api.databases.DatabaseManager;
 import org.bukkit.Location;
 
 import java.sql.ResultSet;
@@ -24,7 +20,7 @@ public class Limite {
 
     static {
         Limite.listLimite = new HashMap<>();
-        DataCore.getInstance().loadLimite();
+        DataCore.loadLimite();
     }
 
     public static double[] getLimite(String nameLimite){

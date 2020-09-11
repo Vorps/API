@@ -1,6 +1,5 @@
 package net.vorps.api.data;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.lang.LangSetting;
@@ -19,192 +18,164 @@ public class DataCore extends Data{
 
     private static DatabaseManager database;
 
-
     public static void setDatabase(DatabaseManager database){
         DataCore.database = database;
     }
 
-    private static DataCore instance;
 
-    public static DataCore getInstance() {
-        if (DataCore.instance == null) DataCore.instance = new DataCore();
-        return DataCore.instance;
-    }
-
+    @DataReload
     public static void loadParticle(){
         Particle.clear();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("particle");
-            while(results.next()) new Particle(results);
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+            resultSet = DataCore.database.getData("particle");
+            while(resultSet != null && resultSet.next()) new Particle(resultSet);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadLangSetting(){
+    @DataReload
+    public static void loadLangSetting(){
         LangSetting.clearLangSetting();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("lang_setting");
-            while(results.next()) new LangSetting(results);
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+            resultSet = DataCore.database.getData("lang_setting");
+            while(resultSet != null && resultSet.next()) new LangSetting(resultSet);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadLang(){
+    @DataReload
+    public static void loadLang(){
         Lang.clearLang();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("lang");
-            while(results.next()) new Lang(results);
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+            resultSet = DataCore.database.getData("lang");
+            while(resultSet != null && resultSet.next()) new Lang(resultSet);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadMoney(){
+    @DataReload
+    public static void loadMoney(){
         Money.clear();
         try {
-            ResultSet results = DataCore.database.getData("money");
-            while(results.next()) new Money(results);
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+            ResultSet resultSet = DataCore.database.getData("money");
+            while(resultSet != null && resultSet.next()) new Money(resultSet);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadInteractMessage(){
+    @DataReload
+    public static void loadInteractMessage(){
         InteractMessage.clear();
         try {
             ResultSet resultSet = DataCore.database.getData("interact_message");
-            while (resultSet.next()) new InteractMessage(resultSet);
-        } catch (SqlException | SQLException e){
+            while (resultSet != null && resultSet.next()) new InteractMessage(resultSet);
+        } catch (SQLException e){
             e.printStackTrace();
         }
     }
-
-    public void loadBonus(){
+    @DataReload
+    public static void loadBonus(){
         Bonus.clear();
         try {
             ResultSet resultSet = DataCore.database.getData("bonus");
-            while (resultSet.next()) new Bonus(resultSet);
-        } catch (SqlException | SQLException e){
+            while (resultSet != null && resultSet.next()) new Bonus(resultSet);
+        } catch (SQLException e){
             e.printStackTrace();
         }
     }
-
-    public void loadRank(){
+    @DataReload
+    public static void loadRank(){
         Rank.clear();
         try {
             ResultSet resultSet = DataCore.database.getData("rank");
-            while (resultSet.next()) new Rank(resultSet);
-        } catch (SqlException | SQLException e){
+            while (resultSet != null && resultSet.next()) new Rank(resultSet);
+        } catch (SQLException e){
             e.printStackTrace();
         }
     }
-
-    public void loadSetting(){
+    @DataReload
+    public static void loadSetting(){
         Settings.clear();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("setting");
-            while(results.next()) new Settings(results);
+            resultSet = DataCore.database.getData("setting");
+            while(resultSet != null && resultSet.next()) new Settings(resultSet);
         } catch (SQLException e){
-            //
-        } catch (SqlException e) {
             e.printStackTrace();
         }
         Settings.initSettings();
     }
-
-    public void loadLocation(){
+    @DataReload
+    public static void loadLocation(){
         Location.clear();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("location");
-            while (results.next()) {
-                new Location(results);
+            resultSet = DataCore.database.getData("location");
+            while (resultSet != null && resultSet.next()) {
+                new Location(resultSet);
             }
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadLimite(){
+    @DataReload
+    public static void loadLimite(){
         Limite.clear();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("limite");
-            while (results.next()) {
-                new Limite(results);
+            resultSet = DataCore.database.getData("limite");
+            while (resultSet != null && resultSet.next()) {
+                new Limite(resultSet);
             }
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadItem(){
+    @DataReload
+    public static void loadItem(){
         Item.clear();
-        ResultSet results;
+        ResultSet resultSet;
         try {
-            results = DataCore.database.getData("item");
-            while (results.next()) new Item(results);
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+            resultSet = DataCore.database.getData("item");
+            while (resultSet != null && resultSet.next()) new Item(resultSet);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadFireWork(){
+    @DataReload
+    public static void loadFireWork(){
         Firework.clear();
         try {
-            ResultSet results = DataCore.database.getData("firework");
-            while (results.next()) {
-                new Firework(results);
+            ResultSet resultSet = DataCore.database.getData("firework");
+            while (resultSet != null && resultSet.next()) {
+                new Firework(resultSet);
             }
         } catch (SQLException e){
-            //
-        } catch (SqlException e){
             e.printStackTrace();
         }
     }
 
-    public void loadBookHelp(){
+    public static void loadBookHelp(){
         BookHelp.clear();
         try{
-            ResultSet results = DataCore.database.getData("book");
-            while(results.next()) new BookHelp(results, false, DataCore.database);
-        }catch(SQLException e){
-            //
-        }catch (SqlException e) {
+            ResultSet resultSet = DataCore.database.getData("book");
+            while(resultSet != null && resultSet.next()) new BookHelp(resultSet, false, DataCore.database);
+        }catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public void loadMessageTitle(){
+    @DataReload
+    public static void loadMessageTitle(){
         MessageTitle.clear();
         try {
-            ResultSet results = DataCore.database.getData("message_title");
-            while (results.next()) {
-                new MessageTitle(results);
+            ResultSet resultSet = DataCore.database.getData("message_title");
+            while (resultSet != null && resultSet.next()) {
+                new MessageTitle(resultSet);
             }
-        } catch (SQLException e){
-            //
-        } catch (SqlException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

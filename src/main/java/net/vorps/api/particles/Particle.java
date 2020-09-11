@@ -1,11 +1,7 @@
 package net.vorps.api.particles;
 
-import net.vorps.api.Exceptions.SqlException;
-import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
 import lombok.Getter;
-import net.vorps.api.databases.DatabaseManager;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -26,7 +22,7 @@ public class Particle {
     public Particle(ResultSet result) throws SQLException {
         this.particle = result.getString(2).toUpperCase();
         try {
-            java.lang.reflect.Constructor constructor = Class.forName("net.vorps.api.particles."+result.getString(3)).getConstructor();
+            java.lang.reflect.Constructor<?> constructor = Class.forName("net.vorps.api.particles."+result.getString(3)).getConstructor();
             this.model = (ModelParticle) constructor.newInstance();
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,7 +45,7 @@ public class Particle {
 
     static {
         Particle.listParticle = new HashMap<>();
-        DataCore.getInstance().loadParticle();
+        DataCore.loadParticle();
     }
 
     public static Particle getParticle(String name){

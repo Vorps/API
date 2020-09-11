@@ -2,9 +2,7 @@ package net.vorps.api.objects;
 
 import lombok.Getter;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
 import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.lang.LangSetting;
@@ -30,7 +28,7 @@ public class BookHelp{
     private final HashMap<String, ArrayList<String>> values;
     private final boolean state;
 
-    public BookHelp(ResultSet result, boolean state, DatabaseManager database) throws SQLException, SqlException {
+    public BookHelp(ResultSet result, boolean state, DatabaseManager database) throws SQLException {
         this.state = state;
         if(state) this.item = new HashMap<>();
         else this.label = new HashMap<>();
@@ -71,7 +69,7 @@ public class BookHelp{
     static {
         BookHelp.bookHelpList = new HashMap<>();
         BookHelp.trieBookHelp = new TreeMap<>(new ComparatorBookHelp(BookHelp.bookHelpList));
-        DataCore.getInstance().loadBookHelp();
+        DataCore.loadBookHelp();
     }
 
     public static HashMap<String, BookHelp> getBookList(){

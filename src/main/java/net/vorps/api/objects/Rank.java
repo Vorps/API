@@ -1,9 +1,7 @@
 package net.vorps.api.objects;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.data.DataCore;
 import lombok.Getter;
-import net.vorps.api.databases.DatabaseManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -58,7 +56,7 @@ public class Rank extends Object{
 
     static {
         Rank.rankList = new HashMap<>();
-        DataCore.getInstance().loadRank();
+        DataCore.loadRank();
     }
 
     public static Rank getRank(String nameRank){

@@ -1,16 +1,17 @@
 package net.vorps.api.data;
 
-import net.vorps.api.Exceptions.SqlException;
 import net.vorps.api.databases.Database;
-import net.vorps.api.databases.DatabaseManager;
 import lombok.Getter;
-import net.vorps.api.utils.Settings;
+import net.vorps.api.players.PlayerData;
 
-import java.nio.file.Paths;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,8 +23,9 @@ public abstract class Data {
     public static final SimpleDateFormat FORMAT_DAY_MONTH_YEAR;
     public static final SimpleDateFormat FORMAT_DAY_MONTH_YEAR_HOUR_MINUTE_SECOND;
 
-    private static @Getter HashMap<String, UUID> listPlayerString;
-    private static @Getter HashMap<UUID, String> listPlayerUUID;
+    public static Class<? extends Data> dataClass;
+    private static HashMap<String, UUID> listPlayerString;
+    private static HashMap<UUID, String> listPlayerUUID;
 
     static {
         Data.listPlayerString = new HashMap<>();
@@ -34,6 +36,27 @@ public abstract class Data {
         Data.loadListPlayer();
     }
 
+    public static void reload() {
+        for(Method method : dataClass.getMethods()){
+            if(method.getAnnotationsByType(DataReload.class).length == 1){
+                try {
+                    method.invoke(null);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void reload(String method) {
+        try {
+            dataClass.getMethod(method).invoke(null);
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @DataReload
     public static void loadListPlayer(){
         Data.listPlayerString.clear();
         Data.listPlayerUUID.clear();
@@ -43,16 +66,9 @@ public abstract class Data {
                 Data.listPlayerString.put(result.getString(2), UUID.fromString(result.getString(1)));
                 Data.listPlayerUUID.put(UUID.fromString(result.getString(1)), result.getString(2));
             }
-        } catch (SqlException | SQLException e){
+        } catch (SQLException e){
             e.printStackTrace();
         }
-    }
-
-
-
-
-    public static boolean isUUID(String uuid){
-        return uuid.split("-").length == 5;
     }
 
     public static boolean isPlayer(String name){
@@ -63,6 +79,14 @@ public abstract class Data {
         return Data.listPlayerUUID.containsKey(uuid);
     }
 
+    public static boolean isPlayerOnline(String name){
+        return PlayerData.isPlayerDataCore(name);
+    }
+
+    public static boolean isPlayerPlayerOnline(UUID uuid){
+        return PlayerData.isPlayerDataCore(uuid);
+    }
+
     public static UUID getUUIDPlayer(String namePlayer){
         return Data.listPlayerString.get(namePlayer);
     }
@@ -70,4 +94,17 @@ public abstract class Data {
     public static String getNamePlayer(UUID uuid){return Data.listPlayerUUID.get(uuid);}
 
     public static String getNamePlayer(String uuid){return Data.listPlayerUUID.get(UUID.fromString(uuid));}
+
+    public static List<String> getNamePlayers(){
+        return new ArrayList<>(Data.listPlayerString.keySet());
+    }
+
+    public static void addPlayer(String namePlayer, UUID uuidPlayer){
+        Data.listPlayerString.put(namePlayer, uuidPlayer);
+        Data.listPlayerUUID.put(uuidPlayer, namePlayer);
+    }
+
+    public static List<String> getOnlineNamePlayers(){
+        return PlayerData.getListPlayerData();
+    }
 }

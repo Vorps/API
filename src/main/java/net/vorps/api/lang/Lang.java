@@ -4,11 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import net.vorps.api.Exceptions.SqlException;
-import net.vorps.api.data.Data;
 import net.vorps.api.data.DataCore;
-import net.vorps.api.databases.Database;
-import net.vorps.api.databases.DatabaseManager;
 
 /**
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
@@ -84,24 +80,14 @@ public class Lang {
 
     static {
         Lang.lang = new HashMap<>();
-        DataCore.getInstance().loadLang();
+        DataCore.loadLang();
     }
 
     public static String getMessage(String key, String langPlayer, Args... args){
-        String message = "";
-        if (args.length == 0) {
-            if (lang.containsKey(key)) {
-                HashMap<String, String> messageHashMap = lang.get(key);
-                if (messageHashMap.containsKey(langPlayer)) {
-                    message = messageHashMap.get(langPlayer);
-                } else {
-                    System.out.println("Erreur key language not found");
-                }
-            } else {
-                System.out.println("Erreur key lang not found");
-            }
-        } else {
-            message = getMessage(key, langPlayer);
+        String message = key;
+        if(lang.containsKey(key)){
+            HashMap<String, String> messageHashMap = lang.get(key);
+            message = messageHashMap.get(langPlayer);
             for (Args argsList : args) {
                 message = message.replaceAll(argsList.parameter.label, argsList.value);
             }
@@ -109,6 +95,9 @@ public class Lang {
         return message;
     }
 
+    public static boolean isMessageLang(String key){
+        return Lang.lang.containsKey(key);
+    }
     public static void clearLang(){
         Lang.lang.clear();
     }
