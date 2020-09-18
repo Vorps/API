@@ -39,14 +39,14 @@ public class Command {
 
 
     private static HashMap<String, TabCompletion> completionListHashMap;
-    public static ArrayList<Command> commands;
+    public static HashMap<String, Command> commands;
 
 
     public static void addCompletion(TabCompletion tabCompletion){
         Command.completionListHashMap.put(tabCompletion.name, tabCompletion);
     }
     static{
-        Command.commands = new ArrayList<>();
+        Command.commands = new HashMap<>();
         Command.completionListHashMap = new HashMap<>();
         Command.completionListHashMap.put("PLAYER", new TabCompletion("PLAYER", (commandSender) -> Data.getNamePlayers().stream().filter(e -> !e.equals("CONSOLE")).collect(Collectors.toList())));
         Command.completionListHashMap.put("PLAYER_EXCEPT_SENDER", new TabCompletion("PLAYER_EXCEPT_SENDER", "PLAYER", (commandSender) -> Data.getNamePlayers().stream().filter(e -> !(e.equals(commandSender.getName()) || e.equals("CONSOLE"))).collect(Collectors.toList())){
@@ -69,14 +69,11 @@ public class Command {
             }
         });
 
-        Command.completionListHashMap.put("COMMAND", new TabCompletion("COMMAND", (commandSender) -> Command.commands.stream().map(Command::getName).collect(Collectors.toList())));
+        Command.completionListHashMap.put("COMMAND", new TabCompletion("COMMAND", (commandSender) -> Command.commands.keySet().stream().filter(commandSender::hasPermissionStartWith).collect(Collectors.toList())));
     }
-
 
     public Set<String> methodsName = new HashSet<>();
     private final int NB_HELP_PER_PAGE = 4;
-
-
 
     /**
      * Construire une commande
@@ -99,7 +96,7 @@ public class Command {
             this.commandMethods.put(method.getName()+(tab ? "" : ":"+method.getParameterCount()), new CommandMethod(method, method.getAnnotationsByType(CommandPermission.class), nameParameter));
             this.methodsName.add(method.getName());
         }
-        Command.commands.add(this);
+        Command.commands.put(nameCommand, this);
     }
 
     private boolean validation(CommandSender commandSender,  ArrayList<String> parameters, List<String> args){
@@ -125,8 +122,15 @@ public class Command {
         for(Parameter parameter : method.getParameters()){
             if (String[].class.equals(parameter.getType())) {
                 argument[i] = Arrays.stream(args).map(Object::toString).skip(i).collect(Collectors.toList()).toArray(new String[args.length-i]);
-            } else if(Player.class.equals(parameter.getType())){
+            } else if(Player.class.equals(parameter.getType())) {
                 argument[i] = Command.playerAdapter.getPlayer(args[i].toString());
+                i++;
+            }else if(Integer.class.equals(parameter.getType())){
+                try{
+                    argument[i] = Integer.parseInt(args[i].toString());
+                } catch (NumberFormatException e){
+                    argument[i] = args[i];
+                }
                 i++;
             }else{
                 argument[i] = args[i];
@@ -182,7 +186,6 @@ public class Command {
     private Pair<List<String>, Boolean> getCompletion(CommandSender commandSender, String value){
         if(Command.completionListHashMap.containsKey(value.toUpperCase()))
             return new Pair<>(Command.completionListHashMap.get(value.toUpperCase()).tabCompletionList.getList(commandSender), true);
-
         return new Pair<>(new ArrayList<>(Collections.singleton(value)), false);
     }
 
@@ -278,7 +281,7 @@ public class Command {
         return help;
     }
 
-    private void helpFunction(CommandSender sender, int page) {
+    public void helpFunction(CommandSender sender, int page) {
         if(sender.hasPermissionStartWith(this.name)){
             if(this.commandMethods.values().size() < page * NB_HELP_PER_PAGE) page = (int) Math.ceil(this.commandMethods.values().size()/((double)NB_HELP_PER_PAGE));
             if(page < 1) page = 1;

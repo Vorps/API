@@ -2,8 +2,11 @@ package net.vorps.api.lang;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import lombok.Getter;
 import net.vorps.api.data.DataCore;
 
 /**
@@ -13,9 +16,9 @@ public class LangSetting {
 
     private static HashMap<String, LangSetting> listLangSetting;
 
-    private final String name;
-    private final String columnId;
-    private final String nameDisplay;
+    private final @Getter String name;
+    private final @Getter String columnId;
+    private final @Getter String nameDisplay;
 
     public LangSetting(ResultSet result) throws SQLException {
         this.name = result.getString(1);
@@ -29,22 +32,13 @@ public class LangSetting {
         DataCore.loadLangSetting();
     }
 
-    public static HashMap<String, LangSetting> getListLangSetting(){
-        return LangSetting.listLangSetting;
+    public static LangSetting getLangSetting(String nameLang){
+        return LangSetting.listLangSetting.get(nameLang);
     }
 
-    public String getName(){
-        return this.name;
+    public static List<String> getListLangSetting(){
+        return new ArrayList<String>(LangSetting.listLangSetting.keySet());
     }
-
-    public String getColumnId(){
-        return this.columnId;
-    }
-
-    public String getNameDisplay(){
-        return this.nameDisplay;
-    }
-
     public static void clearLangSetting(){
         LangSetting.listLangSetting.clear();
     }

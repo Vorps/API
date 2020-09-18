@@ -19,8 +19,8 @@ public class Lang {
     public Lang(ResultSet result) throws SQLException{
         String key = result.getString(1);
         HashMap<String, String> langMessage =  new HashMap<>();
-        for(LangSetting langSetting : LangSetting.getListLangSetting().values()){
-            langMessage.put(langSetting.getName(), result.getString(langSetting.getColumnId()));
+        for(String langSetting : LangSetting.getListLangSetting()){
+            langMessage.put(langSetting, result.getString(LangSetting.getLangSetting(langSetting).getColumnId()));
         }
         Lang.lang.put(key, langMessage);
     }

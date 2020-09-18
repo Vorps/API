@@ -38,18 +38,18 @@ public class BookHelp{
         BookMeta meta = (BookMeta) this.book.getItemMeta();
         meta.setAuthor(result.getString(2));
         this.book.setItemMeta(meta);
-        if (state) for(LangSetting langSetting : LangSetting.getListLangSetting().values()) this.item.put(langSetting.getName(), Item.getItem(result.getString(3), langSetting.getName()));
-        else for(LangSetting langSetting : LangSetting.getListLangSetting().values()) this.label.put(langSetting.getName(), Lang.getMessage(result.getString(3), langSetting.getName()));
+        if (state) for(String langSetting : LangSetting.getListLangSetting()) this.item.put(langSetting, Item.getItem(result.getString(3), langSetting));
+        else for(String langSetting : LangSetting.getListLangSetting()) this.label.put(langSetting, Lang.getMessage(result.getString(3), langSetting));
         ResultSet results = database.getData("book_setting", "bs_book = '"+ result.getString(1)+"' ");
         try {
-            for(LangSetting langSetting : LangSetting.getListLangSetting().values()){
+            for(String langSetting : LangSetting.getListLangSetting()){
                 ArrayList<String> pages = new ArrayList<>();
-                while(results.next()) pages.add(Lang.getMessage(result.getString(3), langSetting.getName()));
-                this.values.put(langSetting.getName(), pages);
+                while(results.next()) pages.add(Lang.getMessage(result.getString(3), langSetting));
+                this.values.put(langSetting, pages);
             }
         } catch (SQLException e){e.printStackTrace();}
-        if(state) for(LangSetting langSetting : LangSetting.getListLangSetting().values()) BookHelp.bookHelpList.put(this.item.get(langSetting.getName()).get().getItemMeta().getDisplayName(), this);
-        else for(LangSetting langSetting : LangSetting.getListLangSetting().values()) BookHelp.bookHelpList.put(this.label.get(langSetting.getName()), this);
+        if(state) for(String langSetting : LangSetting.getListLangSetting()) BookHelp.bookHelpList.put(this.item.get(langSetting).get().getItemMeta().getDisplayName(), this);
+        else for(String langSetting : LangSetting.getListLangSetting()) BookHelp.bookHelpList.put(this.label.get(langSetting), this);
     }
 
     public ItemStack getBook(String lang){

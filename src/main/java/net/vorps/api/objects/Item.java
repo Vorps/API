@@ -36,11 +36,11 @@ public class Item {
             item = new ItemBuilder(result.getString(3));
         }
         String labelTmp = result.getString(2);
-        for(LangSetting langSetting : LangSetting.getListLangSetting().values()) this.label.put(langSetting.getName(), Lang.getMessage(labelTmp, langSetting.getName()));
+        for(String langSetting : LangSetting.getListLangSetting()) this.label.put(langSetting, Lang.getMessage(labelTmp, langSetting));
         String loreTmp = result.getString(8);
         if(loreTmp != null){
             this.lore = new HashMap<>();
-            for(LangSetting langSetting : LangSetting.getListLangSetting().values()) this.lore.put(langSetting.getName(), lore(Lang.getMessage(loreTmp,  langSetting.getName())));
+            for(String langSetting : LangSetting.getListLangSetting()) this.lore.put(langSetting, lore(Lang.getMessage(loreTmp,  langSetting)));
         }
         item.withAmount(result.getInt(7));
         enchant(result.getString(9), item);
