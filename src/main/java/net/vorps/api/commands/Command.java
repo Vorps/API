@@ -84,7 +84,7 @@ public class Command {
         this.name = nameCommand;
         this.time = time;
         this.commandMethods = new HashMap<>();
-        for (Method method : Arrays.stream(command.getDeclaredMethods()).filter((m) -> Modifier.isStatic(m.getModifiers()) && !m.getName().startsWith("lambda$")).collect(Collectors.toList())) {
+        for (Method method : Arrays.stream(command.getDeclaredMethods()).filter((m) -> m.trySetAccessible() && Modifier.isStatic(m.getModifiers()) && !m.getName().startsWith("lambda$")).collect(Collectors.toList())) {
             ArrayList<String> nameParameter = new ArrayList<>();
             boolean tab = false;
             for(Parameter parameter : method.getParameters()){
@@ -120,21 +120,34 @@ public class Command {
         int i = 0;
         Object[] argument = new Object[method.getParameters().length];
         for(Parameter parameter : method.getParameters()){
-            if (String[].class.equals(parameter.getType())) {
-                argument[i] = Arrays.stream(args).map(Object::toString).skip(i).collect(Collectors.toList()).toArray(new String[args.length-i]);
-            } else if(Player.class.equals(parameter.getType())) {
-                argument[i] = Command.playerAdapter.getPlayer(args[i].toString());
-                i++;
-            }else if(Integer.class.equals(parameter.getType())){
-                try{
-                    argument[i] = Integer.parseInt(args[i].toString());
-                } catch (NumberFormatException e){
+            switch (parameter.getType().getName()){
+                case "[Ljava.lang.String;":
+                    argument[i] = Arrays.stream(args).map(Object::toString).skip(i).collect(Collectors.toList()).toArray(new String[args.length-i]);
+                    break;
+                case "net.vorps.api.commands.Player":
+                    argument[i] = Command.playerAdapter.getPlayer(args[i].toString());
+                    i++;
+                    break;
+                case "java.lang.Integer":
+                    try{
+                        argument[i] = Integer.parseInt(args[i].toString());
+                    } catch (NumberFormatException e){
+                        argument[i] = args[i];
+                    }
+                    i++;
+                    break;
+                case "java.lang.Double":
+                    try{
+                        argument[i] = Double.parseDouble(args[i].toString());
+                    } catch (NumberFormatException e){
+                        argument[i] = args[i];
+                    }
+                    i++;
+                    break;
+                default:
                     argument[i] = args[i];
-                }
-                i++;
-            }else{
-                argument[i] = args[i];
-                i++;
+                    i++;
+                    break;
             }
         }
         method.invoke(null, argument);
@@ -261,9 +274,9 @@ public class Command {
 
     private boolean hasPermission(CommandSender commandSender, CommandMethod commandMethod){
         if(commandMethod.commandPermission.length > 0){
-            return commandSender.hasPermission(Arrays.stream(commandMethod.commandPermission).map(e -> this.name + (this.name.equals(commandMethod.method.getName()) ? "" : "."+commandMethod.method.getName()) + (e.value().length() > 0 ? "."+e.value() : "")).collect(Collectors.toCollection(ArrayList::new))) && (Arrays.stream(commandMethod.commandPermission).map(CommandPermission::console).reduce(true, (last, next) -> last & next) || commandSender.getUUID() != null);
+            return commandSender.hasPermission(Arrays.stream(commandMethod.commandPermission).map(e -> this.name + (this.name.equals(commandMethod.method.getName()) ? "" : "."+commandMethod.method.getName()) + (e.value().length() > 0 ? "."+e.value() : "")).toArray(String[]::new)) && (Arrays.stream(commandMethod.commandPermission).map(CommandPermission::console).reduce(true, (last, next) -> last & next) || commandSender.getUUID() != null);
         } else {
-            return commandSender.hasPermission(new ArrayList<>(Collections.singleton(this.name + (this.name.equals(commandMethod.method.getName()) ? "" : "." + commandMethod.method.getName()))));
+            return commandSender.hasPermission(this.name + (this.name.equals(commandMethod.method.getName()) ? "" : "." + commandMethod.method.getName()));
         }
     }
     private ArrayList<String> helpFunction(CommandSender commandSender, Collection<CommandMethod> commandMethods){

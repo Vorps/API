@@ -12,6 +12,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,8 +68,8 @@ public class CommandListener extends Command implements TabExecutor {
 
 
             @Override
-            public boolean hasPermission(ArrayList<String> permission) {
-                return permission.stream().map(sender::hasPermission).reduce(true, (last, next) -> last && next);
+            public boolean hasPermission(String ...permission) {
+                return Arrays.stream(permission).map(sender::hasPermission).reduce(true, (last, next) -> last && next);
             }
 
             @Override

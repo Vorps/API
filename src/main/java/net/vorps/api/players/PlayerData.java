@@ -6,6 +6,7 @@ import net.vorps.api.databases.Database;
 import net.vorps.api.databases.DatabaseManager;
 import lombok.Getter;
 import net.vorps.api.lang.Lang;
+import net.vorps.api.objects.Money;
 import net.vorps.api.objects.Rank;
 import net.vorps.api.utils.Settings;
 
@@ -27,6 +28,11 @@ public abstract class PlayerData implements Player{
     protected String nickName;
     protected String lang;
     protected Rank rank;
+    protected HashMap<String, Double> money;
+    protected boolean isVanish;
+    protected boolean isFly;
+    protected boolean isBuild;
+    protected boolean isVisible;
 
     protected PlayerData(UUID uuid, String name) {
         this.UUID = uuid;
@@ -34,6 +40,12 @@ public abstract class PlayerData implements Player{
         this.nickName = PlayerData.getNickName(uuid);
         this.lang = PlayerData.getLang(uuid);
         this.rank = PlayerData.getRank(uuid);
+        this.money = new HashMap<>();
+        this.isVanish = PlayerData.isVanish(uuid);
+        this.isFly = PlayerData.isFly(uuid);
+        this.isBuild = PlayerData.isBuild(uuid);
+        this.isVisible = PlayerData.isVisible(uuid);
+        for(String money : Money.getMoneys()) this.money.put(money, PlayerData.getMoney(uuid, money));
         PlayerData.playerDataList.put(this.name, this);
         PlayerData.playerDataUUIDList.put(this.UUID, this);
     }
@@ -87,6 +99,63 @@ public abstract class PlayerData implements Player{
         return lang;
     }
 
+    public static boolean isVanish(UUID uuid) {
+        boolean isVanish = true;
+        if(PlayerData.isPlayerDataCore(uuid)){
+            isVanish =  PlayerData.getPlayerDataCore(uuid).isVanish;
+        } else if(Data.isPlayer(uuid)){
+            try {
+                isVanish = Database.BUNGEE.getDatabase().getDataUnique("player_setting", "ps_uuid = '" + uuid + "'").getBoolean("ps_vanish");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return isVanish;
+    }
+
+    public static boolean isFly(UUID uuid) {
+        boolean isFly = false;
+        if(PlayerData.isPlayerDataCore(uuid)){
+            isFly =  PlayerData.getPlayerDataCore(uuid).isFly;
+        } else if(Data.isPlayer(uuid)){
+            try {
+                isFly = Database.BUNGEE.getDatabase().getDataUnique("player_setting", "ps_uuid = '" + uuid + "'").getBoolean("ps_fly");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return isFly;
+    }
+
+    public static boolean isBuild(UUID uuid) {
+        boolean isBuild = true;
+        if(PlayerData.isPlayerDataCore(uuid)){
+            isBuild =  PlayerData.getPlayerDataCore(uuid).isBuild;
+        } else if(Data.isPlayer(uuid)){
+            try {
+                isBuild = Database.BUNGEE.getDatabase().getDataUnique("player_setting", "ps_uuid = '" + uuid + "'").getBoolean("ps_build");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return isBuild;
+    }
+
+    public static boolean isVisible(UUID uuid) {
+        boolean isVisible = true;
+        if(PlayerData.isPlayerDataCore(uuid)){
+            isVisible =  PlayerData.getPlayerDataCore(uuid).isVisible;
+        } else if(Data.isPlayer(uuid)){
+            try {
+                isVisible = Database.BUNGEE.getDatabase().getDataUnique("player_setting", "ps_uuid = '" + uuid + "'").getBoolean("ps_visible");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return isVisible;
+    }
+
+
     public static String getNickName(UUID uuid) {
         String nickname = null;
         if(uuid != null){
@@ -121,39 +190,28 @@ public abstract class PlayerData implements Player{
 
     public static double getMoney(UUID uuid, String money) {
         double value = 0;
-        try {
-            value = Database.BUNGEE.getDatabase().getDataUnique("player_money", "pm_uuid = '" + uuid + "' && pm_money = '" + money + "'").getDouble(3);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if(PlayerData.isPlayerDataCore(uuid)){
+            value = PlayerData.getPlayerDataCore(uuid).money.get(money);
+        } else {
+            try {
+                value = Database.BUNGEE.getDatabase().getDataUnique("player_money", "pm_uuid = '" + uuid + "' && pm_money = '" + money + "'").getDouble(3);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return value;
     }
 
-    public static void addMoney(UUID uuid, String money, double value) {
-        try {
-            Database.BUNGEE.getDatabase().updateTable("player_money", "pm_uuid = '" + uuid + "' && pm_money = '" + money + "'", "+", new DatabaseManager.Values("pm_value", value));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void setMoney(UUID uuid, String money, double value) {
+        if(PlayerData.isPlayerDataCore(uuid)){
+            PlayerData.getPlayerDataCore(uuid).money.put(money, value);
+        }
         try {
             Database.BUNGEE.getDatabase().updateTable("player_money", "pm_uuid = '" + uuid + "' && pm_money = '" + money + "'", new DatabaseManager.Values("pm_value", value));
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-    public static void removeMoney(UUID uuid, String money, double value) {
-        try {
-            Database.BUNGEE.getDatabase().updateTable("player_money", "pm_uuid = '" + uuid + "' && pm_money = '" + money + "'", "-", new DatabaseManager.Values("pm_value", value));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 
     public static void addNotification(UUID uuid, String key, Lang.Args... args) {
         String message = Lang.getMessage(key, PlayerData.getLang(uuid), args);

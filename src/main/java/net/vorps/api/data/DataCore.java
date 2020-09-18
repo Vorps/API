@@ -5,7 +5,6 @@ import net.vorps.api.lang.Lang;
 import net.vorps.api.lang.LangSetting;
 import net.vorps.api.objects.*;
 import net.vorps.api.particles.Particle;
-import net.vorps.api.objects.Bonus;
 import net.vorps.api.objects.Money;
 import net.vorps.api.objects.Rank;
 import net.vorps.api.utils.Settings;
@@ -76,16 +75,7 @@ public class DataCore extends Data{
             e.printStackTrace();
         }
     }
-    @DataReload
-    public static void loadBonus(){
-        Bonus.clear();
-        try {
-            ResultSet resultSet = DataCore.database.getData("bonus");
-            while (resultSet != null && resultSet.next()) new Bonus(resultSet);
-        } catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
+
     @DataReload
     public static void loadRank(){
         Rank.clear();

@@ -5,33 +5,25 @@ import lombok.Getter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Project Bungee Created by Vorps on 01/02/2016 at 01:44.
  */
 public class Rank extends Object{
 
-	private @Getter
-    final String rank;
-	private @Getter
-    final String rankDisplay;
-	private @Getter
-    final String rankAlias;
-	private @Getter
-    final String colorRank;
-	private @Getter
-    final String colorChat;
-	private @Getter
-    final boolean visibleRank;
-	private @Getter
-    final int levelRank;
-	private @Getter
-    final int numbersFriends;
-	private @Getter
-    final int numbersMembers;
-    private @Getter
-    final int pendingGame;
+	private @Getter final String rank;
+	private @Getter final String rankDisplay;
+	private @Getter final String rankAlias;
+	private @Getter final String colorRank;
+	private @Getter final String colorChat;
+	private @Getter final boolean visibleRank;
+	private @Getter final int levelRank;
+	private @Getter final int numbersFriends;
+	private @Getter final int numbersMembers;
+    private @Getter final int pendingGame;
 
 	public Rank(ResultSet result) throws SQLException {
         this.rank = result.getString(1);
@@ -52,20 +44,21 @@ public class Rank extends Object{
         return this.rankDisplay.isEmpty() ? this.colorRank+"["+this.rank+"]" : this.colorRank+this.rankDisplay+colorChat;
 	}
 
-    private static @Getter HashMap<String, Rank> rankList;
+    private static HashMap<String, Rank> rankList;
 
     static {
         Rank.rankList = new HashMap<>();
         DataCore.loadRank();
     }
 
+    public static List<String> getRanks(){
+        return new ArrayList<>(Rank.rankList.keySet());
+    }
+
     public static Rank getRank(String nameRank){
         return Rank.rankList.get(nameRank);
     }
 
-    public static boolean isRank(String rank){
-        return Rank.getRankList().containsKey(rank);
-    }
     public static void clear(){
         Rank.rankList.clear();
     }

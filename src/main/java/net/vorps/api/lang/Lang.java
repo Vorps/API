@@ -28,47 +28,22 @@ public class Lang {
 
 
     public static class Args{
-        private final Parameter parameter;
+        private final String parameter;
         private final String value;
 
         public Args(Parameter parameter, String value){
+            this.parameter = parameter.label;
+            this.value = value;
+        }
+
+        public Args(String parameter, String value){
             this.parameter = parameter;
             this.value = value;
         }
     }
 
     public enum Parameter {
-        STATE,
-        TIME,
-        TEAM,
-        POINT,
-        NBR_PLAYER,
-        GOLDS,
-        KILL,
-        DEAD,
-        WOOL,
-        VAR,
-        PLAYER,
-        MODE,
-        SERVER,
-        MESSAGE,
-        KILLER,
-        NBR_MAX_PLAYER,
-        COLOR,
-        WINNER,
-        PRICE,
-        DEVICE,
-        LOOSER,
-        KIT,
-        PAGE,
-        LIFE,
-        BONUS,
-        KILLED,
-        SPECTATOR,
-        SPEED,
-        REASON,
-        AUTHOR,
-        CHANNEL;
+        VAR,PAGE, STATE, PLAYER, MESSAGE, MONEY, RANK, TIME;
         private final String label;
 
         Parameter(){
@@ -89,7 +64,7 @@ public class Lang {
             HashMap<String, String> messageHashMap = lang.get(key);
             message = messageHashMap.get(langPlayer);
             for (Args argsList : args) {
-                message = message.replaceAll(argsList.parameter.label, argsList.value);
+                message = message.replaceAll(argsList.parameter, argsList.value);
             }
         }
         return message;

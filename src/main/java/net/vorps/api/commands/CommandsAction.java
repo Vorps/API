@@ -55,7 +55,7 @@ public class CommandsAction {
 
     private void message_player(Player player){
         this.commandSender.sendMessage("CMD."+this.name+".SENDER", new Lang.Args(Lang.Parameter.STATE, this.booleanSupplier.get() ? "ON" : "OFF"), new Lang.Args(Lang.Parameter.PLAYER, player.getName()));
-        player.sendMessage("CMD."+this.name+".PLAYER", new Lang.Args(Lang.Parameter.STATE, player.getName()), new Lang.Args(Lang.Parameter.AUTHOR, this.commandSender.getName()));
+        player.sendMessage("CMD."+this.name+".PLAYER", new Lang.Args(Lang.Parameter.STATE, player.getName()), new Lang.Args(Lang.Parameter.PLAYER, this.commandSender.getName()));
     }
 
 }

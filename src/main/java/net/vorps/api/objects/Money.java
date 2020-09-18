@@ -5,19 +5,18 @@ import lombok.Getter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Project Bungee Created by Vorps on 01/02/2016 at 01:41.
  */
 public class Money{
 
-	private @Getter
-    final String money;
-	private @Getter
-    final String alias;
-	private @Getter
-    final String color;
+	private @Getter final String money;
+	private @Getter final String alias;
+	private @Getter final String color;
 	
 	public Money(ResultSet result) throws SQLException {
 		this.money = result.getString(1);
@@ -31,19 +30,18 @@ public class Money{
         return color+money;
     }
 
-    private static @Getter HashMap<String, Money> listMoney;
+    private static HashMap<String, Money> listMoney;
 
     static {
         Money.listMoney = new HashMap<>();
         DataCore.loadMoney();
     }
 
+    public static List<String> getMoneys(){
+        return new ArrayList<>(Money.listMoney.keySet());
+    }
     public static Money getMoney(String nameMoney){
         return Money.listMoney.get(nameMoney);
-    }
-
-    public static boolean isMoney(String money){
-       return Money.listMoney.containsKey(money);
     }
 
     public static void clear(){

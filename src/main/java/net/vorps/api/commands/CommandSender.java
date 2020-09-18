@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface CommandSender {
 
     void sendMessage(String key, Lang.Args... args);
-    boolean hasPermission(ArrayList<String> permission);
+    boolean hasPermission(String ...permission);
     boolean hasPermissionStartWith(String permission);
     String getName();
     UUID getUUID();
