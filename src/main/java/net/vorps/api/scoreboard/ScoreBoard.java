@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Project SnoWar Created by Vorps on 21/07/2016 at 15:36.
@@ -22,7 +23,7 @@ public abstract class ScoreBoard {
      * @param name String
      */
     public ScoreBoard(final DisplaySlot slot, final String name){
-        this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        this.scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
         this.objective = this.scoreboard.registerNewObjective("Nom", "mort");
         this.value = new HashMap<>();
         this.objective.setDisplaySlot(slot);
@@ -45,8 +46,10 @@ public abstract class ScoreBoard {
      * @param place int
      */
     public void add(final String id, final String value, final int place){
-        this.value.put(id, this.objective.getScore(value));
-        this.value.get(id).setScore(place);
+        if(!this.value.containsKey(id)){
+            this.value.put(id, this.objective.getScore(value));
+            this.value.get(id).setScore(place);
+        } else this.updateValue(id, value);
     }
 
     /**
@@ -54,7 +57,7 @@ public abstract class ScoreBoard {
      * @param id String
      */
     public void remove(final String id){
-        this.objective.getScoreboard().resetScores(this.value.get(id).getEntry());
+        if(this.value.containsKey(id)) Objects.requireNonNull(this.objective.getScoreboard()).resetScores(this.value.get(id).getEntry());
     }
 
     /**
@@ -76,7 +79,7 @@ public abstract class ScoreBoard {
      * @param name String
      */
     public void removeTeam(final String name){
-        this.scoreboard.getTeam(name).unregister();
+        Objects.requireNonNull(this.scoreboard.getTeam(name)).unregister();
         this.teamDisplayName.remove(name);
     }
 

@@ -4,19 +4,18 @@ import net.vorps.api.API;
 import net.vorps.api.data.Data;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.players.PlayerData;
-import net.vorps.api.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class CommandListener extends Command implements TabExecutor {
+public class CommandListener extends Command implements CommandExecutor, TabExecutor {
 
     private final net.vorps.api.commands.Command command;
 

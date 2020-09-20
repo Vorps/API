@@ -1,5 +1,6 @@
 package net.vorps.api.data;
 
+import net.vorps.api.databases.Database;
 import net.vorps.api.databases.DatabaseManager;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.lang.LangSetting;
@@ -7,7 +8,6 @@ import net.vorps.api.objects.*;
 import net.vorps.api.particles.Particle;
 import net.vorps.api.objects.Money;
 import net.vorps.api.objects.Rank;
-import net.vorps.api.utils.Settings;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,7 +38,7 @@ public class DataCore extends Data{
         LangSetting.clearLangSetting();
         ResultSet resultSet;
         try {
-            resultSet = DataCore.database.getData("lang_setting");
+            resultSet = Database.BUNGEE.getDatabase().getData("lang_setting");
             while(resultSet != null && resultSet.next()) new LangSetting(resultSet);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,7 +59,7 @@ public class DataCore extends Data{
     public static void loadMoney(){
         Money.clear();
         try {
-            ResultSet resultSet = DataCore.database.getData("money");
+            ResultSet resultSet = Database.BUNGEE.getDatabase().getData("money");
             while(resultSet != null && resultSet.next()) new Money(resultSet);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -80,7 +80,7 @@ public class DataCore extends Data{
     public static void loadRank(){
         Rank.clear();
         try {
-            ResultSet resultSet = DataCore.database.getData("rank");
+            ResultSet resultSet = Database.BUNGEE.getDatabase().getData("rank");
             while (resultSet != null && resultSet.next()) new Rank(resultSet);
         } catch (SQLException e){
             e.printStackTrace();
@@ -93,11 +93,16 @@ public class DataCore extends Data{
         try {
             resultSet = DataCore.database.getData("setting");
             while(resultSet != null && resultSet.next()) new Settings(resultSet);
+            if(DataCore.database != Database.BUNGEE.getDatabase()){
+                resultSet = Database.BUNGEE.getDatabase().getData("setting");
+                while(resultSet != null && resultSet.next()) new Settings(resultSet);
+            }
         } catch (SQLException e){
             e.printStackTrace();
         }
-        Settings.initSettings();
+        SettingCore.initSettings();
     }
+
     @DataReload
     public static void loadLocation(){
         Location.clear();
@@ -152,7 +157,7 @@ public class DataCore extends Data{
         BookHelp.clear();
         try{
             ResultSet resultSet = DataCore.database.getData("book");
-            while(resultSet != null && resultSet.next()) new BookHelp(resultSet, false, DataCore.database);
+            while(resultSet != null && resultSet.next()) new BookHelp(resultSet, DataCore.database);
         }catch (SQLException e) {
             e.printStackTrace();
         }

@@ -8,7 +8,6 @@ import lombok.Getter;
 import net.vorps.api.lang.Lang;
 import net.vorps.api.objects.Money;
 import net.vorps.api.objects.Rank;
-import net.vorps.api.utils.Settings;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  * Project EclipseApi Created by Vorps on 10/09/2016 at 20:44.
  */
 
-public abstract class PlayerData implements Player{
+public abstract class PlayerData implements Player, InitFunction {
 
     protected @Getter final UUID UUID;
     protected @Getter final String name;
@@ -33,6 +32,7 @@ public abstract class PlayerData implements Player{
     protected boolean isFly;
     protected boolean isBuild;
     protected boolean isVisible;
+    protected boolean isInit;
 
     protected PlayerData(UUID uuid, String name) {
         this.UUID = uuid;
@@ -46,6 +46,7 @@ public abstract class PlayerData implements Player{
         this.isBuild = PlayerData.isBuild(uuid);
         this.isVisible = PlayerData.isVisible(uuid);
         for(String money : Money.getMoneys()) this.money.put(money, PlayerData.getMoney(uuid, money));
+        this.init();
         PlayerData.playerDataList.put(this.name, this);
         PlayerData.playerDataUUIDList.put(this.UUID, this);
     }
@@ -84,7 +85,7 @@ public abstract class PlayerData implements Player{
     }
 
     public static String getLang(UUID uuid) {
-        String lang = Settings.getConsoleLang();
+        String lang = null;
         if(uuid != null){
             if(PlayerData.isPlayerDataCore(uuid)){
                 lang = PlayerData.getPlayerDataCore(uuid).lang;
@@ -227,62 +228,12 @@ public abstract class PlayerData implements Player{
         else PlayerData.addNotification(uuid, key, args);
     }
 
-
-
-    /*    public static String getBonus(UUID uuid) {
-        String bonus = null;
-        try {
-            bonus = PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getString("ps_bonus");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return bonus;
+    @Override
+    public String toString() {
+        return this.rank.toString() + " " + this.name;
     }
 
-    public static boolean isFly(UUID uuid) {
-        boolean fly = true;
-        try {
-            fly = PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getBoolean("ps_fly");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return fly;
+    public static int getNB_PlayerOnline(){
+        return PlayerData.playerDataList.size();
     }
-
-
-
-   public static void setFly(UUID uuid, boolean state) {
-        try {
-            Database.BUNGEE.getDatabase().updateTable("player_setting", "ps_uuid = '" + uuid + "'", new DatabaseManager.Values("ps_fly", state));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    /*public static void setShow(UUID uuid, boolean state) {
-        try {
-            Database.BUNGEE.getDatabase().updateTable("player_setting", "ps_uuid = '" + uuid + "'", new DatabaseManager.Values("ps_show", state));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    /*public static boolean isShow(UUID uuid) {
-        boolean state = false;
-        try {
-            state = PlayerData.getData("player_setting", "ps_uuid = '" + uuid + "'").getBoolean("ps_show");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return state;
-    }*/
-
-
-    /*public static void setServer(UUID uuid, String server) {
-        try {
-            Database.BUNGEE.getDatabase().updateTable("player_setting", "ps_uuid = '" + uuid + "'", new DatabaseManager.Values("ps_server", server));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }*/
 }

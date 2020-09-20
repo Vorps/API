@@ -22,7 +22,7 @@ public abstract class Data {
     public static final SimpleDateFormat FORMAT_HOUR_MINUTE_SECOND;
     public static final SimpleDateFormat FORMAT_DAY_MONTH_YEAR;
     public static final SimpleDateFormat FORMAT_DAY_MONTH_YEAR_HOUR_MINUTE_SECOND;
-
+    public static final String SERVER_NAME;
     public static Class<? extends Data> dataClass;
     private static HashMap<String, UUID> listPlayerString;
     private static HashMap<UUID, String> listPlayerUUID;
@@ -33,6 +33,7 @@ public abstract class Data {
         FORMAT_HOUR_MINUTE_SECOND = new SimpleDateFormat("HH:mm:ss");
         FORMAT_DAY_MONTH_YEAR = new SimpleDateFormat("dd/MM/yyyy");
         FORMAT_DAY_MONTH_YEAR_HOUR_MINUTE_SECOND = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        SERVER_NAME = System.getProperty("user.dir");
         Data.loadListPlayer();
     }
 

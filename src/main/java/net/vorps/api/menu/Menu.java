@@ -12,14 +12,32 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Project Hub Created by Vorps on 03/03/2016 at 06:09.
  */
 public abstract class Menu implements Listener{
 
+    private static final Material COLOR_STAINED_GLASS[] =
+            {
+                    Material.WHITE_STAINED_GLASS_PANE,
+                    Material.ORANGE_STAINED_GLASS_PANE,
+                    Material.MAGENTA_STAINED_GLASS_PANE,
+                    Material.LIGHT_BLUE_STAINED_GLASS_PANE,
+                    Material.YELLOW_STAINED_GLASS_PANE,
+                    Material.LIME_STAINED_GLASS_PANE,
+                    Material.PINK_STAINED_GLASS_PANE,
+                    Material.GRAY_STAINED_GLASS_PANE,
+                    Material.LIGHT_GRAY_STAINED_GLASS_PANE,
+                    Material.CYAN_STAINED_GLASS_PANE,
+                    Material.PURPLE_STAINED_GLASS_PANE,
+                    Material.BLUE_STAINED_GLASS_PANE,
+                    Material.BROWN_STAINED_GLASS_PANE,
+                    Material.GREEN_STAINED_GLASS_PANE,
+                    Material.RED_STAINED_GLASS_PANE,
+                    Material.BLACK_STAINED_GLASS_PANE,
+            };
     protected int[][] model;
     private ItemStack[] items;
     protected byte[] ids;
@@ -32,7 +50,7 @@ public abstract class Menu implements Listener{
      * @param menu Inventory menu create menu bukkit
      * @param model int[][] mode [1][2] 1 : Position of menu 2 : Position of table ids
      */
-    protected Menu(byte[] ids, Inventory menu, int[][] model, Plugin plugin){
+    protected Menu(UUID uuid,  byte[] ids, Inventory menu, int[][] model, Plugin plugin){
         this.menu = menu;
         this.model = model;
         this.ids = ids;
@@ -41,6 +59,11 @@ public abstract class Menu implements Listener{
             if(menu != null && model != null) constructModel();
         }
         Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+        Objects.requireNonNull(Bukkit.getPlayer(uuid)).openInventory(menu);
+    }
+
+    protected void setItem(int place, ItemStack itemStack){
+        this.menu.setItem(place, itemStack);
     }
 
     /**
@@ -48,7 +71,9 @@ public abstract class Menu implements Listener{
      */
     private void init(){
         this.items = new ItemStack[this.ids.length];
-        //for(int i = 0; i < this.ids.length; i++) this.items[i] = new ItemBuilder(Material.BLACK_STAINED_GLASS).withData(this.ids[i]).withName(" ").get();
+        for(int i = 0; i < this.ids.length; i++) {
+            this.items[i] = new ItemBuilder(Menu.COLOR_STAINED_GLASS[this.ids[i]]).withName(" ").get();
+        }
     }
 
     /**
@@ -195,11 +220,24 @@ public abstract class Menu implements Listener{
         } else return index < list.size() && list.size() != 0;
     }
 
-    protected abstract void interractInventory(InventoryClickEvent e);
+    protected abstract void interactInventory(UUID uuid, Material type,  InventoryClickEvent e);
+
+    protected void back(UUID uuid){
+        Bukkit.getPlayer(uuid).closeInventory();
+    }
 
     @EventHandler
-    public void onInterractInventory(InventoryClickEvent e){
-        if(e.getInventory().equals(this.menu) && e.getCurrentItem() != null) interractInventory(e);
+    public void onInteractInventory(InventoryClickEvent e){
+        if(e.getInventory().equals(this.menu) && e.getCurrentItem() != null) {
+            switch (e.getCurrentItem().getType()) {
+                case ARROW:
+                    this.back(e.getWhoClicked().getUniqueId());
+                    break;
+                default:
+                    interactInventory(e.getWhoClicked().getUniqueId(), e.getCurrentItem().getType(), e);
+                    break;
+            }
+        }
     }
 
     @EventHandler

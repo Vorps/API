@@ -1,13 +1,17 @@
 package net.vorps.api.menu;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
 import net.vorps.api.lang.Lang;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Project FortyCubeAPIBukkit Created by Vorps on 28/04/2016 at 17:21.
@@ -23,10 +27,10 @@ public abstract class MenuRecursive extends Menu {
 
     /**
      * Initialize menu
-     * @param player PlayerInterract
+     * @param uuid UUID
      * @param page int
      */
-    public abstract void initMenu(Player player, int page);
+    public abstract void initMenu(UUID uuid, int page);
 
     /**
      * Contruct menu Recursive :: lineSize : lineSize == 9 || 7  -- start : start%9 == 0
@@ -41,8 +45,8 @@ public abstract class MenuRecursive extends Menu {
      * @param type Type
      * @param plugin Plugin
      */
-    public MenuRecursive(byte[] ids, Inventory menu, int[][] model, ArrayList<ItemBuilder> list, String lang, int lineSize, int start , int[] exclude, Type type, Plugin plugin){
-        this(ids, menu, model, list, lang, lineSize, start, type, plugin);
+    public MenuRecursive(UUID uuid, byte[] ids, Inventory menu, int[][] model, ArrayList<ItemBuilder> list, String lang, int lineSize, int start , int[] exclude, Type type, Plugin plugin){
+        this(uuid, ids, menu, model, list, lang, lineSize, start, type, plugin);
         this.exclude = exclude;
     }
 
@@ -58,8 +62,8 @@ public abstract class MenuRecursive extends Menu {
      * @param type Type
      * @param plugin Plugin
      */
-    public MenuRecursive(byte[] ids, Inventory menu, int[][] model, ArrayList<ItemBuilder> list, String lang, int lineSize, int start, Type type, Plugin plugin){
-        super(ids, menu, model, plugin);
+    public MenuRecursive(UUID uuid, byte[] ids, Inventory menu, int[][] model, ArrayList<ItemBuilder> list, String lang, int lineSize, int start, Type type, Plugin plugin){
+        super(uuid, ids, menu, model, plugin);
         this.exclude = new int[0];
         this.list = list;
         this.lang = lang;
@@ -67,6 +71,9 @@ public abstract class MenuRecursive extends Menu {
         this.start = start;
         this.page = 1;
         this.type = type;
+        menu.clear();
+        this.initMenu(uuid, 1);
+        this.getPage(this.page);
     }
 
     /**
@@ -81,5 +88,31 @@ public abstract class MenuRecursive extends Menu {
         this.page = page;
         if(page > 1) super.menu.setItem(super.menu.getSize()-2, new ItemBuilder(Material.MAP).withName(Lang.getMessage("RECURSIVE.INVENTORY.BACK", this.lang, new Lang.Args(Lang.Parameter.PAGE, ""+(page-1)))).get());
         if(list(0, index, this.list, this.lineSize, this.exclude, index, 0)) super.menu.setItem(super.menu.getSize()-1, new ItemBuilder(Material.PAPER).withName(Lang.getMessage("RECURSIVE.INVENTORY.NEXT", this.lang, new Lang.Args(Lang.Parameter.PAGE, ""+(page+1)))).get());
+    }
+
+    @EventHandler
+    public void onInteractInventory(InventoryClickEvent e){
+        if(e.getInventory().equals(this.menu) && e.getCurrentItem() != null) {
+            switch (e.getCurrentItem().getType()) {
+                case ARROW:
+                    this.back(e.getWhoClicked().getUniqueId());
+                    break;
+                case PAPER:
+                    menu.clear();
+                    initMenu(e.getWhoClicked().getUniqueId(), ++page);
+                    getPage(this.page);
+                    ((Player)e.getWhoClicked()).updateInventory();
+                    break;
+                case MAP:
+                    menu.clear();
+                    initMenu(e.getWhoClicked().getUniqueId(), --page);
+                    getPage(this.page);
+                    ((Player)e.getWhoClicked()).updateInventory();
+                    break;
+                default:
+                    interactInventory(e.getWhoClicked().getUniqueId(), e.getCurrentItem().getType(), e);
+                    break;
+            }
+        }
     }
 }

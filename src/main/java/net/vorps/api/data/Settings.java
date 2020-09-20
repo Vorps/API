@@ -1,6 +1,5 @@
-package net.vorps.api.utils;
+package net.vorps.api.data;
 
-import net.vorps.api.data.DataCore;
 import lombok.Getter;
 
 import java.sql.ResultSet;
@@ -12,12 +11,9 @@ import java.util.HashMap;
  */
 public class Settings {
 
-    private @Getter
-    final boolean valueBoolean;
-    private @Getter
-    final int valueInt;
-    private @Getter
-    final String message;
+    private @Getter final boolean valueBoolean;
+    private @Getter final int valueInt;
+    private @Getter final String message;
 
     public Settings(ResultSet result) throws SQLException {
         this.valueBoolean = result.getBoolean(2);
@@ -30,7 +26,6 @@ public class Settings {
 
     static {
         Settings.settings = new HashMap<>();
-        DataCore.loadSetting();
     }
 
     public static Settings getSettings(String key){
@@ -41,11 +36,5 @@ public class Settings {
         Settings.settings.clear();
     }
 
-    private static @Getter String consoleLang;
-    private static @Getter String console;
 
-    public static void initSettings(){
-        Settings.consoleLang = Settings.getSettings("console_lang").message;
-        Settings.console = "CONSOLE";
-    }
 }

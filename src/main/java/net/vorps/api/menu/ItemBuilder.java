@@ -18,10 +18,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Project Hub Created by Vorps on 01/02/2016 at 01:41.
@@ -29,6 +33,7 @@ import java.util.*;
 @SuppressWarnings("deprecation")
 public class ItemBuilder implements Serializable{
 
+    private @Getter String uuid;
     private @Getter String name;
     private @Getter Material material;
     private @Getter int amount;
@@ -39,60 +44,22 @@ public class ItemBuilder implements Serializable{
     private @Getter Color color;
     private @Getter PotionType potionType;
     private @Getter short durability;
-    private @Getter List<AdvancedEventHandler<?>> advancedEventHandlerList;
 
     {
-        this.advancedEventHandlerList = new ArrayList<>();
         this.amount = 1;
         this.durability = -1;
     }
 
-    public ItemBuilder removeAdvancedEventHandlerList(AdvancedEventHandler<?>... advancedEventHandlerList){
-        this.advancedEventHandlerList.removeAll(Arrays.asList(advancedEventHandlerList));
-        return this;
-    }
 
-    public ItemBuilder withAdvancedEventHandlerList(AdvancedEventHandler<?>... advancedEventHandlerList){
-        this.advancedEventHandlerList.addAll(Arrays.asList(advancedEventHandlerList));
-        this.advancedEventHandlerList.forEach((AdvancedEventHandler<?> handler) -> {
-            if(handler.getEventClass() == InventoryClickEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(InventoryClickEvent e){eventAction(e.getCurrentItem(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerDropItemEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerDropItemEvent e){eventAction(e.getItemDrop().getItemStack(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerInteractEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerInteractEvent e){eventAction(e.getItem(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerItemBreakEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerItemBreakEvent e){eventAction(e.getBrokenItem(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerItemConsumeEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerItemConsumeEvent e){eventAction(e.getItem(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerItemDamageEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerItemDamageEvent e){eventAction(e.getItem(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerPickupArrowEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerPickupArrowEvent e){eventAction(e.getItem().getItemStack(), handler, e);}
-                }, API.getPlugin());
-            if(handler.getEventClass() == PlayerPickupItemEvent.class)
-                Bukkit.getPluginManager().registerEvents(new Listener() {
-                    @EventHandler public void onEvent(PlayerPickupItemEvent e){eventAction(e.getItem().getItemStack(), handler, e);}
-                }, API.getPlugin());
-        });
+    public ItemBuilder withAction(Consumer<InventoryClickEvent> action){
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler public void onEvent(InventoryClickEvent e){
+                if(get().isSimilar(e.getCurrentItem())){
+                    action.accept(e);
+                }
+            }
+        }, API.getPlugin());
         return this;
-    }
-
-    private <T extends AdvancedEventHandler> void eventAction(ItemStack itemStack, T handler, Event e){
-        if(get().isSimilar(itemStack)) handler.onEvent(e);
     }
 
     /**
@@ -107,14 +74,13 @@ public class ItemBuilder implements Serializable{
      * @param potionType PotionType
      */
     public ItemBuilder(PotionType potionType){
+        this.material = Material.POTION;
         this.potionType = potionType;
     }
 
-    /**
-     * @param idName String
-     */
-    public ItemBuilder(String idName) {
-        this.material = Material.getMaterial(idName);
+    public ItemBuilder(String namePlayer) {
+        this.material = Material.PLAYER_HEAD;
+        this.skullOwnerName = namePlayer;
     }
 
     public ItemBuilder(ItemBuilder itemBuilder){
@@ -129,16 +95,6 @@ public class ItemBuilder implements Serializable{
         this.potionType = itemBuilder.potionType;
         this.durability = itemBuilder.durability;
     }
-
-    /**
-     * Skull PlayerInterract
-     * @param namePlayer String
-     */
-    public ItemBuilder setHead(String namePlayer) {
-        skullOwnerName = namePlayer;
-        return this;
-    }
-
 
     public ItemBuilder(ItemStack itemStack) {
         this.name = itemStack.getItemMeta().getDisplayName();
@@ -169,6 +125,16 @@ public class ItemBuilder implements Serializable{
         this.name = name;
         return this;
     }
+
+    /**
+     * @param uuid String
+     * @return ItemBuilder
+     */
+    public ItemBuilder withUUID(String uuid) {
+        this.uuid = uuid;
+        return this;
+    }
+
     /**
      * @param amount int
      * @return ItemBuilder
@@ -222,45 +188,24 @@ public class ItemBuilder implements Serializable{
      * @return ItemStack
      */
     public ItemStack get() {
-        ItemStack item;
-        if(color != null){
-            item = new ItemStack(this.material, 1);
-            LeatherArmorMeta lam = (LeatherArmorMeta) item.getItemMeta();
-            lam.setColor(this.color);
-            item.setItemMeta(lam);
-            if(this.name != null) lam.setDisplayName(this.name);
+        ItemStack item = new ItemStack(this.material);
+        ItemMeta meta = item.getItemMeta();
+        if(meta != null){
+            if(this.name != null) meta.setDisplayName(this.name);
+            if(this.potionType != null){
+                ((PotionMeta)meta).setBasePotionData(new PotionData(this.potionType));
+            }
             if(this.enchantments.size() > 0)
                 for(Map.Entry<String, Integer> enchant : this.enchantments.entrySet())
-                    lam.addEnchant(Enchantment.getByName(enchant.getKey()), enchant.getValue(), true);
-            if(this.hideEnchant) lam.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            lam.setLore(this.lore);
-            item.setItemMeta(lam);
-        } else {
-            if(skullOwnerName != null){
+                    meta.addEnchant(Enchantment.getByName(enchant.getKey()), enchant.getValue(), true);
+            if(this.hideEnchant)
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            if(this.color != null)
+                ((LeatherArmorMeta)meta).setColor(this.color);
+            else if(this.skullOwnerName != null) ((SkullMeta) meta).setOwner(this.skullOwnerName);
 
-                item = new ItemStack(Material.SKELETON_SKULL, 1);
-                SkullMeta sm = (SkullMeta)item.getItemMeta();
-                sm.setOwner(skullOwnerName);
-                if(this.name != null) sm.setDisplayName(this.name);
-                if(this.enchantments.size() > 0)
-                    for(Map.Entry<String, Integer> enchant : this.enchantments.entrySet())
-                        sm.addEnchant(Enchantment.getByName(enchant.getKey()), enchant.getValue(), true);
-                if(this.hideEnchant)
-                    sm.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                sm.setLore(this.lore);
-                item.setItemMeta(sm);
-            } else {
-                    /*if(potionType != null) item = PotionType.valueOf(potionType).toItemStack(1);*/
-                item = new ItemStack(this.material);
-                ItemMeta meta = item.getItemMeta();
-                meta.setLore(this.lore);
-                if(this.name != null) meta.setDisplayName(this.name);
-                if(this.enchantments.size() > 0)
-                    for(Map.Entry<String, Integer> enchant : this.enchantments.entrySet())
-                        meta.addEnchant(Enchantment.getByName(enchant.getKey()), enchant.getValue(), true);
-                if(this.hideEnchant) meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                item.setItemMeta(meta);
-            }
+            meta.setLore(this.lore);
+            item.setItemMeta(meta);
         }
         item.setAmount(this.amount);
         if(durability != -1) item.setDurability((short)  (item.getType().getMaxDurability()-durability));
@@ -270,15 +215,15 @@ public class ItemBuilder implements Serializable{
     @Override
     public boolean equals(Object item) {
         return  (item instanceof ItemBuilder) &&
-                (this.name != null ? this.name.equals(((ItemBuilder)item).name) : ((ItemBuilder)item).name == null) &&
-                (this.material != null ? this.material.equals(((ItemBuilder)item).material) : ((ItemBuilder)item).material == null) &&
+                (Objects.equals(this.name, ((ItemBuilder) item).name)) &&
+                (Objects.equals(this.material, ((ItemBuilder) item).material)) &&
                 this.amount == ((ItemBuilder)item).amount &&
                 this.hideEnchant == ((ItemBuilder)item).hideEnchant &&
                 this.lore.equals(((ItemBuilder)item).lore) &&
                 this.enchantments.equals(((ItemBuilder)item).enchantments) &&
-                (this.skullOwnerName != null ? this.skullOwnerName.equals(((ItemBuilder)item).skullOwnerName) : ((ItemBuilder)item).skullOwnerName == null) &&
-                (this.color != null ? this.color.equals(((ItemBuilder)item).color) : ((ItemBuilder)item).color == null) &&
-                (this.potionType != null ? this.potionType.equals(((ItemBuilder)item).potionType) : ((ItemBuilder)item).potionType == null);
+                (Objects.equals(this.skullOwnerName, ((ItemBuilder) item).skullOwnerName)) &&
+                (Objects.equals(this.color, ((ItemBuilder) item).color)) &&
+                (Objects.equals(this.potionType, ((ItemBuilder) item).potionType));
     }
 
 }

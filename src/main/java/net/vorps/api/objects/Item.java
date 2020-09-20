@@ -2,6 +2,7 @@ package net.vorps.api.objects;
 
 import net.vorps.api.data.DataCore;
 import net.vorps.api.menu.ItemBuilder;
+import org.bukkit.Material;
 import org.bukkit.potion.PotionType;
 
 import net.vorps.api.lang.Lang;
@@ -18,8 +19,8 @@ import java.util.HashMap;
  */
 public class Item {
 
-    private final HashMap<String, String> label;
-    private HashMap<String, String[]> lore;
+    private final String label;
+    private String lore;
     private final ItemBuilder item;
 
     /**
@@ -28,29 +29,23 @@ public class Item {
      * @throws SQLException
      */
     public Item(final ResultSet result) throws SQLException {
-        this.label = new HashMap<>();
         ItemBuilder item;
-        if(result.getString(5) != null) item = new ItemBuilder(result.getString(5));
-        else if(result.getString(6) != null) item = new ItemBuilder(PotionType.valueOf(result.getString(6)));
-        else {
-            item = new ItemBuilder(result.getString(3));
-        }
-        String labelTmp = result.getString(2);
-        for(String langSetting : LangSetting.getListLangSetting()) this.label.put(langSetting, Lang.getMessage(labelTmp, langSetting));
-        String loreTmp = result.getString(8);
-        if(loreTmp != null){
-            this.lore = new HashMap<>();
-            for(String langSetting : LangSetting.getListLangSetting()) this.lore.put(langSetting, lore(Lang.getMessage(loreTmp,  langSetting)));
-        }
-        item.withAmount(result.getInt(7));
-        enchant(result.getString(9), item);
-        int durability = result.getInt(10);
+        if(result.getString("i_skull_owner") != null) item = new ItemBuilder(result.getString("i_skull_owner"));
+        else if(result.getString("i_potion_type") != null) item = new ItemBuilder(PotionType.valueOf(result.getString("i_potion_type")));
+        else item = new ItemBuilder(Material.getMaterial(result.getString("i_material").toUpperCase()));
+
+        this.label = result.getString("i_label");
+        this.lore = result.getString("i_lore");
+
+        item.withAmount(result.getInt("i_amount"));
+        enchant(result.getString("i_enchant"), item);
+        int durability = result.getInt("i_durability");
         if(durability != 0) item.withDurability(durability);
-        String color =result.getString(11);
+        String color = result.getString("i_color");
         if(color != null) item.withColor(Color.valueOf(color).getColor());
-        item.hideEnchant(result.getBoolean(12));
+        item.hideEnchant(result.getBoolean("i_hide_enchant"));
         this.item = item;
-        Item.listItem.put(result.getString(1), this);
+        Item.listItem.put(result.getString("i_name"), this);
     }
 
     /**
@@ -60,8 +55,8 @@ public class Item {
      */
     private ItemBuilder getItem(final String lang){
         ItemBuilder item = new ItemBuilder(this.item);
-        item.withName(this.label.get(lang));
-        if(this.lore != null) item.withLore(this.lore.get(lang));
+        item.withName(Lang.getMessage(this.label, lang));
+        if(this.lore != null) item.withLore(Lang.getMessage(this.lore, lang).split(";"));
         return item;
     }
 
@@ -70,25 +65,6 @@ public class Item {
     static {
         Item.listItem = new HashMap<>();
         DataCore.loadItem();
-    }
-
-    /**
-     * return Lore
-     * @param lore String
-     * @return String[]
-     */
-    private static String[] lore(final String lore){
-        ArrayList<String> loreTab = new ArrayList<>();
-        int y = 0;
-        if(lore != null){
-            for(int i = 0; i < lore.length(); i++)
-                if(lore.charAt(i) == ';'){
-                    loreTab.add(lore.substring(y, i));
-                    y = i+1;
-                }
-            return loreTab.toArray(new String[loreTab.size()]);
-        }
-        return new String[0];
     }
 
     /**
@@ -128,7 +104,9 @@ public class Item {
     public static ItemBuilder getItem(String name, String lang){
         return Item.listItem.get(name).getItem(lang);
     }
-
+    public static boolean isItem(String name){
+        return Item.listItem.containsKey(name);
+    }
 
     /**
      * Clear all Item

@@ -43,7 +43,7 @@ public class Lang {
     }
 
     public enum Parameter {
-        VAR,PAGE, STATE, PLAYER, MESSAGE, MONEY, RANK, TIME;
+        VAR,PAGE, STATE, PLAYER, MESSAGE, MONEY, RANK, TIME, CHANNEL;
         private final String label;
 
         Parameter(){
